@@ -719,7 +719,7 @@ function requestCode(rec){return encCode({t:'join',u:USER,e:rec.email,rid:rec.ri
 function showWait(){const rec=getUsers()[USER];const code=requestCode(rec);$('#w-mail').href=mailto(ADMIN_EMAIL,'RLC Tracker access request: '+USER,'Hi Lourjel,'+NL+NL+'Please approve my account for the RLC Client Follow-up Tracker.'+NL+NL+'Username: '+USER+NL+'Email: '+rec.email+NL+NL+'Request code:'+NL+code+NL);$('#w-code').value='';$('#gate').hidden=false;$('#app').hidden=true;view('v-wait');}
 async function openVault(){await loadData();await migrateOld();await startApp();}
 async function newAccountKey(p,raw){const ks=rnd(16);const pk=await dataKey(p,ks);const w=await aesEnc(pk,raw);return {ks:toB64(ks),wk:{iv:toB64(w.iv),ct:toB64(w.ct)}};}
-async function startApp(){$('#gate').hidden=true;$('#app').hidden=false;$('#who-name').textContent=USER;$$('#gate input,#gate textarea').forEach(i=>{if(i.type!=='file')i.value='';});$('#admin-tab').hidden=!ADMIN;$('#admin-load').hidden=!!ADMIN;render();buildMsg();renderAdmin();setupNotify();const h=location.hash.slice(1);if(['today','clients','templates'].concat(ADMIN?['admin']:[]).includes(h))showTab(h);}
+async function startApp(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}$('#gate').hidden=true;$('#app').hidden=false;$('#who-name').textContent=USER;$$('#gate input,#gate textarea').forEach(i=>{if(i.type!=='file')i.value='';});$('#admin-tab').hidden=!ADMIN;$('#admin-load').hidden=!!ADMIN;render();buildMsg();renderAdmin();setupNotify();const h=location.hash.slice(1);if(['today','clients','templates'].concat(ADMIN?['admin']:[]).includes(h))showTab(h);}
 async function migrateOld(){const OLD='rlc_followup_leads_v1';const old=localStorage.getItem(OLD);if(!old||leads.length)return;let L;try{L=JSON.parse(old);}catch(e){return;}if(!Array.isArray(L))return;
 let odb=null;try{odb=await new Promise((ok,no)=>{const r=indexedDB.open('rlc_followup_files',1);r.onupgradeneeded=()=>{r.transaction.abort();};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}catch(e){}
 if(odb){for(const l of L.map(norm))for(const p of l.proofs.concat(l.files)){try{const rec=await new Promise((ok,no)=>{const q=odb.transaction('f').objectStore('f').get(p.id);q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error);});if(rec&&rec.blob)await putRaw(p.id,await rec.blob.arrayBuffer());}catch(e){}}odb.close();try{indexedDB.deleteDatabase('rlc_followup_files');}catch(e){}}
@@ -770,7 +770,7 @@ rec.status='active';rec.admin=true;delete rec.reset;putUser(u,rec);USER=u;KEY=aw
 catch(x){$('#gate').hidden=false;view('v-in');err('i-err','Could not sign in with that key.');}}
 $('#ad-file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const k=await loadAdminKey(f);if(!k)return;ADMKEY=k;
 const all=getUsers();const admins=Object.keys(all).filter(u=>all[u].admin&&all[u].esc);
-if(admins.length===1)return adminOpen(admins[0],'');
+if(admins.length===1)return adminOpen(admins[0],'');if(!admins.length){let u='admin',i=2;while(all[u])u='admin'+(i++);return adminOpen(u,toB64(rnd(18)));}
 ADMODE=admins.length?'pick':'create';const pick=ADMODE==='pick';
 $('#ad-title').textContent=pick?'Admin sign in':'Create your admin account';
 $('#ad-note').textContent=pick?'Your key is loaded. Which admin account? '+admins.join(', '):'Your key is loaded. Choose a username and password for your admin account in this browser. You only do this once.';
