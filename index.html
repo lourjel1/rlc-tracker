@@ -631,8 +631,17 @@ function renderTplSide(){renderHint();renderSend();renderSeq();renderFiles();}
 
 /* ---------- Backup ---------- */
 const b64=b=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]||'');r.onerror=no;r.readAsDataURL(b);});
-async function exportAll(){const files=[];for(const l of leads.map(norm))for(const p of l.proofs.concat(l.files)){const b=await getBlob(p.id,p.type);if(b)files.push({id:p.id,data:await b64(b)});}const blob=new Blob([JSON.stringify({app:'rlc-followup',v:2,user:USER,exported:new Date().toISOString(),leads,files})],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rlc-clients-backup-'+USER+'-'+today()+'.json';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);toast('Backup downloaded. Keep it private: it is not password-protected.');}
-async function importAll(file){try{const d=JSON.parse(await file.text());if(!d||!Array.isArray(d.leads))throw 0;for(const f of d.files||[]){await putRaw(f.id,fromB64(f.data));}const byId=new Map(leads.map(l=>[l.id,l]));d.leads.forEach(l=>byId.set(l.id,l));leads=[...byId.values()];persist();toast('Restored '+d.leads.length+' clients.');}catch(e){toast('That file is not a tracker backup.',true);}$('#import').value='';}
+async function exportAll(){try{const files=[];for(const l of leads.map(norm))for(const p of l.proofs.concat(l.files)){const b=await getBlob(p.id,p.type);if(b)files.push({id:p.id,data:await b64(b)});}
+const now=new Date();const stamp=today()+'-'+pad(now.getHours())+pad(now.getMinutes());const name='rlc-backup-'+USER+'-'+stamp+'.json';
+const blob=new Blob([JSON.stringify({app:'rlc-followup',v:3,user:USER,exported:now.toISOString(),leads,approvals:ADMIN?APPROVALS:[],files})],{type:'application/json'});
+try{localStorage.setItem('rlc_last_backup_'+USER,now.toISOString());}catch(e){}
+const file=new File([blob],name,{type:'application/json'});
+if(MOBILE&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'RLC tracker backup'});toast('Backup ready. Open it on your other device and tap Restore.');return;}catch(e){if(e&&e.name==='AbortError')return;}}
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);toast('Backup saved: '+leads.length+' clients. Keep it private.');}catch(e){toast('Could not make the backup.',true);}}
+async function importAll(file){try{const d=JSON.parse(await file.text());if(!d||!Array.isArray(d.leads))throw 0;for(const f of d.files||[]){await putRaw(f.id,fromB64(f.data));}
+const byId=new Map(leads.map(l=>[l.id,l]));let added=0,updated=0,same=0;d.leads.forEach(l=>{const cur=byId.get(l.id);if(!cur){byId.set(l.id,l);added++;}else if((l.updated||l.created||'')>(cur.updated||cur.created||'')){byId.set(l.id,l);updated++;}else same++;});leads=[...byId.values()];
+if(ADMIN&&Array.isArray(d.approvals)){const seen=new Set(APPROVALS.map(a=>a.u+'|'+a.at));d.approvals.forEach(a=>{if(!seen.has(a.u+'|'+a.at))APPROVALS.push(a);});APPROVALS.sort((x,y)=>x.at<y.at?-1:1);}
+persist();const parts=[];if(added)parts.push(added+' new');if(updated)parts.push(updated+' updated');if(same)parts.push(same+' already up to date');toast('Restored: '+(parts.join(', ')||'nothing new')+'.');}catch(e){toast('That file is not a tracker backup.',true);}$('#import').value='';}
 
 /* ---------- Reminders ---------- */
 function remind(){const n=stats().due;if(!n||!('Notification' in window)||Notification.permission!=='granted')return;try{new Notification('RLC follow-ups',{body:n+' client'+(n>1?'s':'')+' need a follow-up today.'});}catch(e){}}
