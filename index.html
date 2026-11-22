@@ -163,21 +163,22 @@ select.sel{width:auto}
 <p class="gate-err" id="i-err" hidden></p>
 <button class="btn" type="submit">Sign in</button>
 <div class="gate-links"><button class="link" type="button" data-go="v-reset">Forgot password?</button><button class="link" type="button" data-go="v-up">Request an account</button></div>
-<button class="btn2" type="button" data-go="v-admin">Admin sign in with admin key</button>
+<button class="btn2" type="button" id="adm-key">Admin sign in with admin key</button>
 </form>
 </div>
 <div id="v-admin" hidden>
-<h1>Admin sign in</h1>
+<h1 id="ad-title">Create your admin account</h1>
+<p class="note" id="ad-note"></p>
 <form id="f-admin">
 <label class="field">Username<input id="ad-user" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
-<label class="field">New password (leave empty to keep it)<input id="ad-pass" type="password" autocomplete="new-password"></label>
-<label class="field">Confirm new password<input id="ad-pass2" type="password" autocomplete="new-password"></label>
+<label class="field" id="ad-p1">Password<input id="ad-pass" type="password" autocomplete="new-password"></label>
+<label class="field" id="ad-p2">Confirm password<input id="ad-pass2" type="password" autocomplete="new-password"></label>
 <p class="gate-err" id="ad-err" hidden></p>
-<button class="btn" type="submit">Choose admin key and sign in</button>
-<input type="file" id="ad-file" accept=".json,application/json" hidden>
+<button class="btn" type="submit" id="ad-go">Create and sign in</button>
 <div class="gate-links"><button class="link" type="button" data-go="v-in">Back to sign in</button></div>
 </form>
 </div>
+<input type="file" id="ad-file" accept=".json,application/json" hidden>
 <div id="v-up" hidden>
 <h1>Request an account</h1>
 <form id="f-up" autocomplete="on">
@@ -699,7 +700,7 @@ $('#imp-go').onclick=()=>{const {out}=impBuild();if(!out.length)return;leads=lea
 
 /* ---------- Accounts ---------- */
 const VIEWS=['v-in','v-up','v-wait','v-reset','v-admin'];
-function view(id){VIEWS.forEach(v=>{$('#'+v).hidden=v!==id;});['i-err','u-err','w-err','r-err','ad-err'].forEach(e=>{$('#'+e).hidden=true;});if(id==='v-admin'&&!getVal('#ad-user')){const a=Object.entries(getUsers()).find(([,r])=>r.admin);if(a)$('#ad-user').value=a[0];}const f=$('#'+id+' input:not([type=file]):not([disabled])');if(f)setTimeout(()=>f.focus(),50);}
+function view(id){VIEWS.forEach(v=>{$('#'+v).hidden=v!==id;});['i-err','u-err','w-err','r-err','ad-err'].forEach(e=>{$('#'+e).hidden=true;});const f=$('#'+id+' input:not([type=file]):not([disabled])');if(f)setTimeout(()=>f.focus(),50);}
 function err(id,m){const e=$('#'+id);e.textContent=m;e.hidden=!m;}
 const pause=()=>new Promise(r=>setTimeout(r,900));
 const okUser=u=>/^[a-z0-9._-]{2,30}$/.test(u);
@@ -750,16 +751,26 @@ $('#admin-load').onclick=()=>$('#admin-file').click();
 $('#admin-file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const k=await loadAdminKey(f);if(!k)return;ADMIN=k;const rec=getUsers()[USER];rec.admin=true;putUser(USER,rec);persist();$('#admin-tab').hidden=false;$('#admin-load').hidden=true;renderAdmin();showTab('admin');toast('Admin key loaded.');};
 
 /* admin sign in with the key file */
-$('#f-admin').onsubmit=e=>{e.preventDefault();const u=getVal('#ad-user').trim().toLowerCase(),p=getVal('#ad-pass');if(!okUser(u))return err('ad-err','Type your username (2 to 30 letters or numbers, no spaces).');const rec=getUsers()[u];
-if(rec&&!rec.esc)return err('ad-err','"'+u+'" was made in an older version and cannot be opened with the admin key. Type a new username to create a fresh admin account.');
-if(!rec||p){if(p.length<8)return err('ad-err',rec?'New password must be at least 8 characters, or leave it empty.':'No account named "'+u+'" in this browser. Choose a password (8 or more characters) to create it.');if(p!==getVal('#ad-pass2'))return err('ad-err','The passwords do not match.');}
-err('ad-err','');$('#ad-file').click();};
-$('#ad-file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const k=await loadAdminKey(f);if(!k)return;const u=getVal('#ad-user').trim().toLowerCase(),p=getVal('#ad-pass');
-try{let rec=getUsers()[u],raw;
-if(rec){const ek=await crypto.subtle.importKey('pkcs8',fromB64(k.enc),{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);raw=new Uint8Array(await crypto.subtle.decrypt({name:'RSA-OAEP'},ek,fromB64(rec.esc)));if(p)Object.assign(rec,await newAccountKey(p,raw));}
+let ADMKEY=null,ADMODE='create';
+$('#adm-key').onclick=()=>$('#ad-file').click();
+async function adminOpen(u,p){const k=ADMKEY;try{let rec=getUsers()[u],raw;
+if(rec){const ek=await crypto.subtle.importKey('pkcs8',fromB64(k.enc),{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);raw=new Uint8Array(await crypto.subtle.decrypt({name:'RSA-OAEP'},ek,fromB64(rec.esc)));}
 else{raw=rnd(32);const esc=toB64(await crypto.subtle.encrypt({name:'RSA-OAEP'},await pubEnc(),raw));rec=Object.assign({email:'',rid:toB64(rnd(9)),esc,created:new Date().toISOString()},await newAccountKey(p,raw));}
-rec.status='active';rec.admin=true;delete rec.reset;putUser(u,rec);USER=u;KEY=await importK(raw);await loadData();ADMIN=k;persist();await migrateOld();await startApp();toast(p?'Signed in as admin. Your new password is set.':'Signed in as admin.');}
-catch(x){err('ad-err','Could not sign in with that key.');}};
+rec.status='active';rec.admin=true;delete rec.reset;putUser(u,rec);USER=u;KEY=await importK(raw);await loadData();ADMIN=k;persist();await migrateOld();await startApp();toast('Signed in as admin.');}
+catch(x){$('#gate').hidden=false;view('v-in');err('i-err','Could not sign in with that key.');}}
+$('#ad-file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const k=await loadAdminKey(f);if(!k)return;ADMKEY=k;
+const all=getUsers();const admins=Object.keys(all).filter(u=>all[u].admin&&all[u].esc);
+if(admins.length===1)return adminOpen(admins[0],'');
+ADMODE=admins.length?'pick':'create';const pick=ADMODE==='pick';
+$('#ad-title').textContent=pick?'Admin sign in':'Create your admin account';
+$('#ad-note').textContent=pick?'Your key is loaded. Which admin account? '+admins.join(', '):'Your key is loaded. Choose a username and password for your admin account in this browser. You only do this once.';
+$('#ad-p1').hidden=pick;$('#ad-p2').hidden=pick;$('#ad-go').textContent=pick?'Sign in':'Create and sign in';
+$('#ad-user').value=pick?admins[0]:'';$('#ad-pass').value='';$('#ad-pass2').value='';view('v-admin');};
+$('#f-admin').onsubmit=async e=>{e.preventDefault();if(!ADMKEY)return view('v-in');const u=getVal('#ad-user').trim().toLowerCase();const rec=getUsers()[u];
+if(ADMODE==='pick'){if(!rec||!rec.admin||!rec.esc)return err('ad-err','"'+u+'" is not an admin account in this browser.');return adminOpen(u,'');}
+if(!okUser(u))return err('ad-err','Username: 2 to 30 letters or numbers, no spaces.');
+if(rec)return err('ad-err','"'+u+'" is already used by another account here. Choose a different username.');
+const p=getVal('#ad-pass');if(p.length<8)return err('ad-err','Password must be at least 8 characters.');if(p!==getVal('#ad-pass2'))return err('ad-err','The passwords do not match.');adminOpen(u,p);};
 
 /* password reset */
 let resetU=null;
