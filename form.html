@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#212988">
+<title>RLC by Lourjel Quezada — New Lead</title>
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#212988;--midnight:#0b1a3d;--gold:#daa900;--gold-text:#8a6a00;--bg:#fff;--panel:#eef0f8;--ink:#121633;--muted:#4a5070;--line:#d9dcec;--ok:#1d7a4c;--bad:#c0392f;--r:2px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--midnight);color:var(--ink);font-family:Poppins,'Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.5}
+.wrap{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:calc(28px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.card{width:100%;max-width:480px;background:var(--bg);border-top:3px solid var(--gold);border-radius:var(--r);padding:26px 22px;box-shadow:0 12px 32px rgba(0,0,0,.35)}
+.eyebrow{margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-text)}
+h1{margin:0 0 6px;font-family:Cinzel,Georgia,serif;font-weight:700;letter-spacing:.04em;font-size:24px;color:var(--brand)}
+.sub{margin:0 0 18px;color:var(--muted);font-size:14px}
+form{display:flex;flex-direction:column;gap:14px}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);font-weight:500}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:#fff;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:0;border-color:var(--brand)}
+.req{color:var(--bad)}
+.btn{font:inherit;font-size:14px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;padding:13px 16px;border-radius:var(--r);border:0;background:var(--brand);color:#fff;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:wait}
+.fine{font-size:12px;color:var(--muted);margin:0}
+.err{color:var(--bad);font-size:13px;margin:0}
+.done{text-align:center}
+.done .tick{width:56px;height:56px;border-radius:9999px;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;margin:6px auto 14px;font-size:28px;color:var(--brand)}
+.link{background:none;border:0;padding:0;font:inherit;font-size:14px;color:var(--brand);text-decoration:underline;cursor:pointer}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+<p class="eyebrow">RLC by Lourjel Quezada</p>
+<div id="v-form">
+<h1>New lead</h1>
+<p class="sub">Executive Property Specialist · RLC Residences</p>
+<form id="f" novalidate>
+<label>Full name <span class="req">*</span><input id="name" autocomplete="name" required></label>
+<label>Mobile number<input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="09xx xxx xxxx"></label>
+<label>Email<input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"></label>
+<label>Interested project<select id="project">
+<option value="">Choose a project</option>
+<option>MIRA · Cubao</option>
+<option>Sierra Valley Gardens · Cainta</option>
+<option>Cirrus · Bridgetowne</option>
+<option>The Sapphire Bloc · Ortigas</option>
+<option>Le Pont · Bridgetowne</option>
+<option>SYNC Residences</option>
+<option>Gateway Regency Studios</option>
+<option>Woodsville Crest</option>
+<option>Springdale Baliwag</option>
+<option>Port Residences</option>
+<option value="other">Other / not sure yet</option>
+</select></label>
+<label id="other-row" hidden>Which project or area?<input id="other"></label>
+<label>Notes<textarea id="notes" rows="3" placeholder="Budget, unit type, best time to call…"></textarea></label>
+<p class="err" id="err" hidden></p>
+<button class="btn" id="go" type="submit">Submit</button>
+<p class="fine">By submitting, you agree to be contacted by LJ Quezada of RLC Residences about properties you are interested in.</p>
+</form>
+</div>
+<div id="v-done" class="done" hidden>
+<div class="tick">✓</div>
+<h1>Thank you!</h1>
+<p class="sub" id="done-msg">Your details were received. LJ will contact you soon.</p>
+<button class="link" id="again" type="button">Add another lead</button>
+</div>
+</div></div>
+<script>
+/* Set after the Apps Script web app is deployed. */
+const SHEET_URL='https://script.google.com/macros/s/AKfycbyaO09giCcTY8Y9WIcrWIQ6Bi0qa2wphtVf2ul0-O57qOKlec_v7w_MS22mlPSWhPyT/exec';
+const FORM_KEY='RLCF-3JUBR84CMH';
+const $=s=>document.querySelector(s);
+const val=s=>String($(s).value||'').trim();
+function err(m){const e=$('#err');e.textContent=m||'';e.hidden=!m;}
+$('#project').onchange=()=>{$('#other-row').hidden=$('#project').value!=='other';};
+$('#f').onsubmit=async e=>{e.preventDefault();err('');
+const name=val('#name'),phone=val('#phone'),email=val('#email');
+if(!name){$('#name').focus();return err('Please enter the full name.');}
+if(!phone&&!email){$('#phone').focus();return err('Please enter a mobile number or an email.');}
+if(phone&&phone.replace(/[^0-9]/g,'').length<10)return err('Please check the mobile number.');
+if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return err('Please check the email.');
+const sel=$('#project').value;const project=sel==='other'?val('#other'):sel.split(' · ')[0];
+if(!/^https:\/\//.test(SHEET_URL))return err('This form is not connected to the Google Sheet yet.');
+const b=$('#go');b.disabled=true;b.textContent='Sending…';
+try{const r=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'add',key:FORM_KEY,name,phone,email,project,notes:val('#notes'),source:new URLSearchParams(location.search).get('source')||'Lead form'})});
+const j=await r.json();if(!j.ok)throw new Error(j.error||'failed');
+$('#v-form').hidden=true;$('#v-done').hidden=false;$('#done-msg').textContent='Thank you, '+name.split(' ')[0]+'! Your details were received. LJ will contact you soon.';}
+catch(x){err('Could not send. Please check the internet connection and try again.');}
+finally{b.disabled=false;b.textContent='Submit';}};
+$('#again').onclick=()=>{$('#f').reset();$('#other-row').hidden=true;$('#v-done').hidden=true;$('#v-form').hidden=false;$('#name').focus();};
+</script>
+</body>
+</html>
