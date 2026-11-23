@@ -111,6 +111,7 @@ select.sel{width:auto}
 .toast.badt{border-left-color:#ff7a6b}
 .empty{text-align:left}
 [hidden]{display:none!important}
+.sync-pill{margin:0;font-size:12px}.sync-pill.bad{color:var(--bad);font-weight:600}
 .tabs{position:sticky;top:0;z-index:5;background:var(--bg);overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{white-space:nowrap}
@@ -264,7 +265,7 @@ select.sel{width:auto}
 </section>
 
 <section class="sec" id="clients" hidden>
-<div class="bar"><button class="btn add" type="button">+ Add client</button><button class="btn2" id="imp-open" type="button">Import sheet</button><input id="c-search" type="search" placeholder="Search name, number, property…" aria-label="Search clients">
+<div class="bar"><button class="btn add" type="button">+ Add client</button><button class="btn2" id="imp-open" type="button">Import sheet</button><button class="btn2 sync-now" type="button" hidden>Sync now</button><span class="note sync-pill" hidden></span><input id="c-search" type="search" placeholder="Search name, number, property…" aria-label="Search clients">
 <select id="c-filter" class="sel" aria-label="Show"><option value="">All clients</option><option value="open">Open clients</option><option value="due">Follow-up due</option><option>New</option><option>Contacted</option><option>Replied</option><option>Interested</option><option>Viewing scheduled</option><option>Reserved</option><option>No response</option><option>Not interested</option></select>
 <select id="c-sort" class="sel" aria-label="Sort"><option value="priority">Sort: priority</option><option value="next">Sort: next follow-up</option><option value="new">Sort: newest</option><option value="name">Sort: name</option></select>
 <button class="btn2" id="export" type="button">Back up</button><label class="btn2" style="cursor:pointer">Restore<input id="import" type="file" accept="application/json,.json" hidden></label></div>
@@ -343,6 +344,13 @@ select.sel{width:auto}
 
 <section class="sec" id="admin" hidden>
 <div class="grid">
+<div class="card"><h3>Google Sheet</h3>
+<p class="note">Connect your leads sheet once on each device. Leads then load from the sheet and every change saves back to it.</p>
+<label class="field">Web app URL<input id="gs-url" placeholder="https://script.google.com/macros/s/…/exec" autocapitalize="none" spellcheck="false"></label>
+<label class="field" style="margin-top:10px">Secret code<input id="gs-key" type="password" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+<div class="bar" style="margin:12px 0 0"><button class="btn" id="gs-save" type="button">Connect and sync</button><button class="btn2 sync-now" type="button" hidden>Sync now</button><button class="link" id="gs-off" type="button" hidden>Disconnect</button></div>
+<p class="note" id="gs-status" style="margin-top:8px">Not connected.</p>
+</div>
 <div class="card"><h3>Approve a request</h3>
 <label class="field">Paste the request email or code<textarea id="a-req" class="code" rows="4" autocapitalize="none" spellcheck="false"></textarea></label>
 <div class="bar" style="margin:10px 0 0"><button class="btn2" id="a-check" type="button">Check</button></div>
@@ -468,7 +476,7 @@ function aesDec(key,iv,ct){return crypto.subtle.decrypt({name:'AES-GCM',iv},key,
 const pubSign=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_SIGN),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
 const pubEnc=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_ENC),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
 async function verifySig(msg,sig){try{return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await pubSign(),fromB64(sig),te.encode(msg));}catch(e){return false;}}
-let USER=null,KEY=null,leads=[],ADMIN=null,APPROVALS=[];
+let USER=null,KEY=null,leads=[],ADMIN=null,APPROVALS=[],SYNC=null,DELQ=[];
 function encBytes(bytes){return aesEnc(KEY,bytes);}
 function decBytes(iv,ct){return aesDec(KEY,iv,ct);}
 const USERS_KEY='rlc_sec_users';
@@ -476,8 +484,8 @@ const getUsers=()=>{try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}
 const putUser=(u,rec)=>{const all=getUsers();all[u]=rec;localStorage.setItem(USERS_KEY,JSON.stringify(all));};
 const dataKeyName=()=>'rlc_sec_data_'+USER;
 let saveChain=Promise.resolve();
-function persist(){render();const snap=JSON.stringify({leads,admin:ADMIN,approvals:APPROVALS});const u=USER;saveChain=saveChain.then(async()=>{if(u!==USER)return;const {iv,ct}=await encBytes(te.encode(snap));localStorage.setItem(dataKeyName(),JSON.stringify({iv:toB64(iv),ct:toB64(ct)}));}).catch(()=>toast('Could not save. Your browser storage may be full.',true));}
-async function loadData(){leads=[];ADMIN=null;APPROVALS=[];const raw=localStorage.getItem(dataKeyName());if(!raw)return;const j=JSON.parse(raw);const d=JSON.parse(td.decode(await decBytes(fromB64(j.iv),fromB64(j.ct))));if(Array.isArray(d)){leads=d;return;}leads=d.leads||[];ADMIN=d.admin||null;APPROVALS=d.approvals||[];}
+function persist(noSync){render();if(!noSync)scheduleSync();const snap=JSON.stringify({leads,admin:ADMIN,approvals:APPROVALS,sync:SYNC,delq:DELQ});const u=USER;saveChain=saveChain.then(async()=>{if(u!==USER)return;const {iv,ct}=await encBytes(te.encode(snap));localStorage.setItem(dataKeyName(),JSON.stringify({iv:toB64(iv),ct:toB64(ct)}));}).catch(()=>toast('Could not save. Your browser storage may be full.',true));}
+async function loadData(){leads=[];ADMIN=null;APPROVALS=[];SYNC=null;DELQ=[];const raw=localStorage.getItem(dataKeyName());if(!raw)return;const j=JSON.parse(raw);const d=JSON.parse(td.decode(await decBytes(fromB64(j.iv),fromB64(j.ct))));if(Array.isArray(d)){leads=d;return;}leads=d.leads||[];ADMIN=d.admin||null;APPROVALS=d.approvals||[];SYNC=d.sync||null;DELQ=d.delq||[];}
 const getLead=id=>leads.find(l=>l.id===id)||null;
 function saveLead(row){const i=leads.findIndex(l=>l.id===row.id);if(i>=0)leads[i]=row;else leads.push(row);persist();}
 
@@ -589,7 +597,7 @@ $('#ed-title').textContent=raw?'Edit client':'Add client';$('#f-delete').hidden=
 function closeEditor(){$('#editor').hidden=true;msEdit=null;}
 function num(s){return Number(String(s||'').replace(/[^0-9.]/g,''))||0;}
 function saveEditor(){if(!msEdit)return;const name=getVal('#f-name').trim();if(!name){toast('Add the client name first.',true);$('#f-name').focus();return;}const row=Object.assign({},msEdit.base);Object.keys(FIELDS).forEach(f=>{row[FIELDS[f]]=getVal(f).trim();});row.budget=num(getVal('#f-budget'));row.monthly=num(getVal('#f-monthly'));row.projects=$$('.f-proj').filter(c=>c.checked).map(c=>c.value);row.proofs=msEdit.proofs.slice();row.updated=new Date().toISOString();if(!row.created)row.created=row.updated;row.id=msEdit.id;saveLead(row);closeEditor();toast('Saved.');}
-function deleteEditing(){if(!msEdit)return;if(!msEdit.isNew){const l=norm(getLead(msEdit.id)||{});l.proofs.concat(l.files).forEach(p=>delFile(p.id));leads=leads.filter(x=>x.id!==msEdit.id);persist();}closeEditor();toast('Client deleted.');}
+function deleteEditing(){if(!msEdit)return;if(!msEdit.isNew){const l=norm(getLead(msEdit.id)||{});l.proofs.concat(l.files).forEach(p=>delFile(p.id));{const gone=getLead(msEdit.id);if(gone&&gone.syncedAt&&!DELQ.includes(gone.id))DELQ.push(gone.id);}leads=leads.filter(x=>x.id!==msEdit.id);persist();}closeEditor();toast('Client deleted.');}
 async function uploadProofs(files){if(!msEdit||!files||!files.length)return;const ch=getVal('#f-proof-ch')||'other';for(const f of [...files]){try{msEdit.proofs.push(await putFile(f,{ch}));}catch(e){toast('A file could not be saved.',true);}}$('#f-proof').value='';renderProofs();if(!msEdit.isNew){const row=Object.assign({},msEdit.base,{proofs:msEdit.proofs.slice(),updated:new Date().toISOString(),id:msEdit.id});msEdit.base=row;saveLead(row);}}
 function removeProof(pid){if(!msEdit)return;msEdit.proofs=msEdit.proofs.filter(p=>p.id!==pid);delFile(pid);renderProofs();if(!msEdit.isNew){const row=Object.assign({},msEdit.base,{proofs:msEdit.proofs.slice(),id:msEdit.id});msEdit.base=row;saveLead(row);}}
 function renderProofs(){const el=$('#proofs');el.replaceChildren();const P=msEdit?msEdit.proofs:[];if(!P.length){el.append(mk('p','note','No proof uploaded yet.'));return;}
@@ -708,6 +716,43 @@ $('#imp-cancel').onclick=()=>{$('#importer').hidden=true;$('#imp-body').hidden=t
 $('#imp-file').onchange=e=>{const f=e.target.files[0];if(f)impLoad(f);};
 $('#imp-go').onclick=()=>{const {out}=impBuild();if(!out.length)return;leads=leads.concat(out);persist();$('#imp-cancel').click();showTab('clients');toast('Imported '+out.length+' client'+(out.length===1?'':'s')+'. Each starts on Day 1 of the follow-up plan today.');};
 
+/* ---------- Google Sheet sync ---------- */
+let syncBusy=false,syncTimer=null,lastSync=null,syncErr='',syncAgain=false;
+function scheduleSync(ms){if(!SYNC||!USER)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,ms==null?2500:ms);}
+function toRow(l){const n=norm(l);const extra=Object.assign({},l);['id','name','phone','email','notes','status','next','source','created','updated','proofs','files','syncedAt'].forEach(k=>{delete extra[k];});
+return {ID:l.id,Created:l.created||l.updated,Updated:l.updated||l.created,Name:l.name||'',Phone:l.phone||'',Email:l.email||'',Project:propOf(n),Notes:l.notes||'',Status:l.status||'New','Next follow-up':l.next||'',Source:l.source||'','Tracker data':JSON.stringify(extra)};}
+function fromRow(r){let d={};try{d=JSON.parse(r['Tracker data']||'{}')||{};}catch(e){d={};}const txt=String(r.Project||'').trim();
+const same=txt===propOf(norm(d));const pj=same?{projects:d.projects||[],other:d.otherProp||''}:impProjects(txt);
+const ymdOk=/^\d{4}-\d{2}-\d{2}$/.test(String(r['Next follow-up']||''));
+return Object.assign({},d,{id:r.ID,name:String(r.Name||'').trim(),phone:impPhone(r.Phone),email:String(r.Email||'').trim(),notes:String(r.Notes||''),status:STATUS.includes(r.Status)?r.Status:(r.Status?String(r.Status):'New'),next:ymdOk?r['Next follow-up']:'',source:String(r.Source||d.source||''),projects:pj.projects,otherProp:pj.other,created:r.Created||new Date().toISOString(),updated:r.Updated||r.Created||''});}
+function mergeRows(R){const byId=new Map(leads.map(l=>[l.id,l]));const seen=new Set();let add=0,upd=0,rem=0;
+R.forEach(r=>{if(!r||!r.ID||DELQ.includes(r.ID))return;seen.add(r.ID);const L=fromRow(r);const cur=byId.get(L.id);
+if(!cur){L.proofs=[];L.files=[];L.syncedAt=L.updated;byId.set(L.id,L);add++;}
+else if((L.updated||'')>(cur.updated||'')){L.proofs=cur.proofs||[];L.files=cur.files||[];L.syncedAt=L.updated;byId.set(L.id,L);upd++;}
+else if((L.updated||'')===(cur.updated||''))cur.syncedAt=cur.updated;});
+for(const [id,l] of byId){if(!seen.has(id)&&l.syncedAt){byId.delete(id);rem++;}}
+leads=[...byId.values()];return {add,upd,rem};}
+async function sheetPost(body){const r=await fetch(SYNC.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key:SYNC.key},body))});const j=await r.json();if(j.error)throw new Error(j.error);return j;}
+async function syncNow(){if(!SYNC||!USER)return;if(syncBusy){syncAgain=true;return;}syncBusy=true;renderSync();try{
+const now=new Date().toISOString();const dirty=leads.filter(l=>!l.syncedAt||l.syncedAt!==l.updated);dirty.forEach(l=>{if(!l.updated)l.updated=l.created||now;if(!l.created)l.created=l.updated;});
+const pushed=dirty.map(l=>[l,l.updated]);for(let i=0;i<pushed.length;i+=40)await sheetPost({action:'upsert',leads:pushed.slice(i,i+40).map(([l])=>toRow(l))});
+pushed.forEach(([l,u])=>{if(l.updated===u)l.syncedAt=u;});
+if(DELQ.length){const ids=DELQ.slice();await sheetPost({action:'delete',ids});DELQ=DELQ.filter(x=>!ids.includes(x));}
+const r=await fetch(SYNC.url+(SYNC.url.includes('?')?'&':'?')+'key='+encodeURIComponent(SYNC.key)+'&t='+Date.now());const j=await r.json();if(j.error)throw new Error(j.error);
+const m=mergeRows(j.rows||[]);lastSync=new Date();syncErr='';persist(true);if(m.add)toast(m.add+' new lead'+(m.add>1?'s':'')+' from your Google Sheet.');
+}catch(e){syncErr=e&&e.message==='denied'?'The secret code does not match your Google Sheet.':'Could not reach your Google Sheet. Check the internet connection and the web app link.';}
+finally{syncBusy=false;renderSync();if(syncAgain){syncAgain=false;scheduleSync(500);}}}
+function renderSync(){const t=syncBusy?'Syncing with Google Sheet…':syncErr?syncErr:lastSync?'Google Sheet synced '+lastSync.toLocaleTimeString('en-PH',{hour:'numeric',minute:'2-digit'}):'';
+$$('.sync-pill').forEach(e=>{e.hidden=!SYNC;e.textContent=t;e.classList.toggle('bad',!!syncErr&&!syncBusy);});$$('.sync-now').forEach(b=>{b.hidden=!SYNC;});
+const st=$('#gs-status');if(st)st.textContent=SYNC?(t||'Connected.'):'Not connected.';const off=$('#gs-off');if(off)off.hidden=!SYNC;}
+function fillSyncForm(){setVal('#gs-url',SYNC?SYNC.url:'');setVal('#gs-key',SYNC?SYNC.key:'');renderSync();}
+$('#gs-save').onclick=async()=>{const url=getVal('#gs-url').trim(),key=getVal('#gs-key').trim();if(!/^https:\/\/script\.google(usercontent)?\.com\//.test(url)){$('#gs-status').textContent='Paste the Web app URL from Apps Script. It starts with https://script.google.com/';return;}if(!key){$('#gs-status').textContent='Paste the secret code.';return;}
+SYNC={url,key};persist(true);await syncNow();if(syncErr){$('#gs-status').textContent=syncErr;}else{toast('Connected to your Google Sheet.');}};
+$('#gs-off').onclick=()=>{if(!confirm('Disconnect the Google Sheet on this device? Your clients stay in the sheet.'))return;SYNC=null;lastSync=null;syncErr='';persist(true);fillSyncForm();};
+$$('.sync-now').forEach(b=>b.addEventListener('click',()=>syncNow()));
+setInterval(()=>{if(SYNC&&USER&&document.visibilityState==='visible')syncNow();},60000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&SYNC&&USER)syncNow();});
+
 /* ---------- Accounts ---------- */
 const VIEWS=['v-in','v-up','v-wait','v-reset','v-admin'];
 function view(id){VIEWS.forEach(v=>{$('#'+v).hidden=v!==id;});['i-err','u-err','w-err','r-err','ad-err'].forEach(e=>{$('#'+e).hidden=true;});const f=$('#'+id+' input:not([type=file]):not([disabled])');if(f)setTimeout(()=>f.focus(),50);}
@@ -719,7 +764,7 @@ function requestCode(rec){return encCode({t:'join',u:USER,e:rec.email,rid:rec.ri
 function showWait(){const rec=getUsers()[USER];const code=requestCode(rec);$('#w-mail').href=mailto(ADMIN_EMAIL,'RLC Tracker access request: '+USER,'Hi Lourjel,'+NL+NL+'Please approve my account for the RLC Client Follow-up Tracker.'+NL+NL+'Username: '+USER+NL+'Email: '+rec.email+NL+NL+'Request code:'+NL+code+NL);$('#w-code').value='';$('#gate').hidden=false;$('#app').hidden=true;view('v-wait');}
 async function openVault(){await loadData();await migrateOld();await startApp();}
 async function newAccountKey(p,raw){const ks=rnd(16);const pk=await dataKey(p,ks);const w=await aesEnc(pk,raw);return {ks:toB64(ks),wk:{iv:toB64(w.iv),ct:toB64(w.ct)}};}
-async function startApp(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}$('#gate').hidden=true;$('#app').hidden=false;$('#who-name').textContent=USER;$$('#gate input,#gate textarea').forEach(i=>{if(i.type!=='file')i.value='';});$('#admin-tab').hidden=!ADMIN;$('#admin-load').hidden=!!ADMIN;render();buildMsg();renderAdmin();setupNotify();const h=location.hash.slice(1);if(['today','clients','templates'].concat(ADMIN?['admin']:[]).includes(h))showTab(h);}
+async function startApp(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}$('#gate').hidden=true;$('#app').hidden=false;$('#who-name').textContent=USER;$$('#gate input,#gate textarea').forEach(i=>{if(i.type!=='file')i.value='';});$('#admin-tab').hidden=!ADMIN;$('#admin-load').hidden=!!ADMIN;render();buildMsg();renderAdmin();setupNotify();fillSyncForm();if(SYNC)syncNow();const h=location.hash.slice(1);if(['today','clients','templates'].concat(ADMIN?['admin']:[]).includes(h))showTab(h);}
 async function migrateOld(){const OLD='rlc_followup_leads_v1';const old=localStorage.getItem(OLD);if(!old||leads.length)return;let L;try{L=JSON.parse(old);}catch(e){return;}if(!Array.isArray(L))return;
 let odb=null;try{odb=await new Promise((ok,no)=>{const r=indexedDB.open('rlc_followup_files',1);r.onupgradeneeded=()=>{r.transaction.abort();};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}catch(e){}
 if(odb){for(const l of L.map(norm))for(const p of l.proofs.concat(l.files)){try{const rec=await new Promise((ok,no)=>{const q=odb.transaction('f').objectStore('f').get(p.id);q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error);});if(rec&&rec.blob)await putRaw(p.id,await rec.blob.arrayBuffer());}catch(e){}}odb.close();try{indexedDB.deleteDatabase('rlc_followup_files');}catch(e){}}
