@@ -745,7 +745,8 @@ finally{syncBusy=false;renderSync();if(syncAgain){syncAgain=false;scheduleSync(5
 function renderSync(){const t=syncBusy?'Syncing with Google Sheet…':syncErr?syncErr:lastSync?'Google Sheet synced '+lastSync.toLocaleTimeString('en-PH',{hour:'numeric',minute:'2-digit'}):'';
 $$('.sync-pill').forEach(e=>{e.hidden=!SYNC;e.textContent=t;e.classList.toggle('bad',!!syncErr&&!syncBusy);});$$('.sync-now').forEach(b=>{b.hidden=!SYNC;});
 const st=$('#gs-status');if(st)st.textContent=SYNC?(t||'Connected.'):'Not connected.';const off=$('#gs-off');if(off)off.hidden=!SYNC;}
-function fillSyncForm(){setVal('#gs-url',SYNC?SYNC.url:'');setVal('#gs-key',SYNC?SYNC.key:'');renderSync();}
+const DEFAULT_SHEET_URL='https://script.google.com/macros/s/AKfycbyaO09giCcTY8Y9WIcrWIQ6Bi0qa2wphtVf2ul0-O57qOKlec_v7w_MS22mlPSWhPyT/exec';
+function fillSyncForm(){setVal('#gs-url',SYNC?SYNC.url:DEFAULT_SHEET_URL);setVal('#gs-key',SYNC?SYNC.key:'');renderSync();}
 $('#gs-save').onclick=async()=>{const url=getVal('#gs-url').trim(),key=getVal('#gs-key').trim();if(!/^https:\/\/script\.google(usercontent)?\.com\//.test(url)){$('#gs-status').textContent='Paste the Web app URL from Apps Script. It starts with https://script.google.com/';return;}if(!key){$('#gs-status').textContent='Paste the secret code.';return;}
 SYNC={url,key};persist(true);await syncNow();if(syncErr){$('#gs-status').textContent=syncErr;}else{toast('Connected to your Google Sheet.');}};
 $('#gs-off').onclick=()=>{if(!confirm('Disconnect the Google Sheet on this device? Your clients stay in the sheet.'))return;SYNC=null;lastSync=null;syncErr='';persist(true);fillSyncForm();};
