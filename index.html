@@ -1085,7 +1085,7 @@ const btn0=$('#f-in button[type=submit]');btn0.disabled=true;try{j=await hub({ac
 if(j&&j.ok)return teamOpen(j,u,p);
 if(local)return localSignIn(e);
 if(!j)return err('i-err','Could not reach the sign-in server. Check the internet connection and try again.');
-await pause();err('i-err',j.error==='pending'?'Your account is waiting for Lourjel\'s approval. You\'ll get an email when it\'s approved.':j.error==='paused'?'Your account is paused. Ask Lourjel to turn it back on.':'Wrong username or password. Check Caps Lock, or tap Forgot password.');};
+if(j.error==='denied'||j.error==='unknown action')return err('i-err','The sign-in server is not set up. Lourjel: your RLC Google Sheet needs the RLC-Google-Sheet-script (not the template script), deployed as a New version.');await pause();err('i-err',j.error==='pending'?'Your account is waiting for Lourjel\'s approval. You\'ll get an email when it\'s approved.':j.error==='paused'?'Your account is paused. Ask Lourjel to turn it back on.':'Wrong username or password. Check Caps Lock, or tap Forgot password.');};
 async function teamOpen(j,u,p){try{TEAM={u,name:j.name||u,email:j.email||'',phone:j.phone||'',token:j.token,template:j.template||''};USER=u;KEY=await dataKey(p,te.encode('rlc-team|'+u));
 try{await loadData();}catch(x){localStorage.removeItem(dataKeyName());leads=[];SYNC=null;DELQ=[];SIG=null;}ADMIN=null;APPROVALS=[];
 if(j.config){try{const c=JSON.parse(j.config);const d=JSON.parse(td.decode(await aesDec(KEY,fromB64(c.iv),fromB64(c.ct))));SYNC=d.sync||null;if(d.sig)SIG=d.sig;if(d.theme)applyTheme(d.theme);}catch(x){}}
