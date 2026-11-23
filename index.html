@@ -111,6 +111,9 @@ select.sel{width:auto}
 .toast.badt{border-left-color:#ff7a6b}
 .empty{text-align:left}
 [hidden]{display:none!important}
+.modal{position:fixed;inset:0;z-index:40;background:rgba(11,26,61,.62);display:flex;align-items:flex-start;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 12px 20px;overflow:auto}
+.modal-card{width:100%;max-width:680px;background:var(--bg);border-top:3px solid var(--gold);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 12px 32px rgba(0,0,0,.35)}
+.modal-card h2{margin:0}.modal-card .out{min-height:320px}
 .tbl-wrap{border:1px solid var(--line);border-radius:var(--r);max-height:72vh;overflow:auto}
 .ctable{min-width:1060px;font-size:13px}
 .ctable thead th{position:sticky;top:0;z-index:2;background:var(--panel);padding:8px 10px}
@@ -395,6 +398,15 @@ label.btn2 input{display:none}
 </div>
 <div class="foot"><button class="link" id="admin-load" type="button">Admin key</button><input type="file" id="admin-file" accept=".json,application/json" hidden></div>
 </div>
+<div class="modal" id="em-modal" hidden role="dialog" aria-modal="true" aria-labelledby="em-title"><div class="modal-card">
+<h2 id="em-title">Email</h2><p class="note" id="em-note" hidden></p>
+<label class="field">To<input id="em-to" type="email" autocapitalize="none" spellcheck="false"></label>
+<label class="field">Subject<input id="em-sub"></label>
+<label class="field">Message<textarea id="em-body" class="out" rows="14"></textarea></label>
+<div id="em-files" class="flist"></div>
+<p class="gate-err" id="em-err" hidden></p>
+<div class="bar" style="margin:0"><button class="btn" id="em-send" type="button">Send</button><button class="btn2" id="em-cancel" type="button">Cancel</button></div>
+</div></div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -650,7 +662,8 @@ link('Call',()=>num?'tel:+'+num:'','call',noNum);
 if(!MOBILE)link(msSeq?'Gmail · follow-up '+msSeq:'Gmail',()=>{if(!l||!l.email)return '';const m=splitEmail(txt());return 'https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(l.email)+'&su='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(m.body);},'email',noMail,true);
 link(MOBILE?(msSeq?'Email · follow-up '+msSeq:'Email'):'Mail app',()=>{if(!l||!l.email)return '';const m=splitEmail(txt());return 'mailto:'+encodeURIComponent(l.email)+'?subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(m.body);},'email',noMail,true);
 if(SYNC&&l&&l.email)el.append(btn('Send email now',sendTplEmail,'btn'));if(navigator.share)el.append(btn('Share with files',shareWithFiles,'btn2'));}
-async function sendTplEmail(){const l=curLead();if(!l||!l.email)return;const m=splitEmail(getVal('#t-out'));await loadMats();const body=withLinks(m.body,emailLinks(l));const files=l.cloud||[];if(!confirm('Send this email to '+l.email+' now?'+(files.length?NL+NL+'Attached: '+files.map(f=>f.name).join(', '):'')))return;toast('Sending…');try{await sheetPost({action:'email',to:l.email,subject:m.subject,body,fileIds:files.map(f=>f.id)});const s=msSeq;msSeq=null;logCh(l.id,'email',s);toast('Email sent to '+l.email+'.');}catch(e){toast(/unknown action/.test(e&&e.message||'')?'Update your Google Sheet script to send emails directly.':'Email not sent.',true);}}
+async function sendTplEmail(){const l=curLead();if(!l)return;const m=splitEmail(getVal('#t-out'));await loadMats();const s=msSeq;
+openEmailEditor({id:l.id,n:s,to:l.email||'',subject:m.subject,body:withLinks(m.body,emailLinks(l)),files:l.cloud||[],tick:true,after:()=>{msSeq=null;}});}
 async function shareWithFiles(){const l=curLead();if(!l){toast('Pick a client first.',true);return;}const F=l.files.filter(f=>msSel[f.id]!==false);const files=[];for(const f of F){const b=await getBlob(f.id,f.type);if(b)files.push(new File([b],f.name||'file',{type:f.type||b.type}));}const chan=getVal('#t-chan');const m=chan==='email'?splitEmail(getVal('#t-out')):{subject:window.MS_TPL.SUBJECT,body:getVal('#t-out')};const data={title:m.subject,text:m.body};if(files.length){if(navigator.canShare&&!navigator.canShare({files})){toast('This browser cannot share these files. Use Open and drag them in.',true);return;}data.files=files;}try{await navigator.share(data);logCh(l.id,chan==='call'?'sms':chan,chan==='email'?msSeq:null);if(chan==='email')msSeq=null;}catch(e){if(e&&e.name!=='AbortError')toast('Sharing did not work here.',true);}}
 function renderSeq(){const el=$('#seq');el.replaceChildren();const l=curLead();[1,2,3].forEach(n=>{const done=l&&l.emailSeq[n];const ready=msSeq===n;const b=mk('button','sw');b.type='button';b.setAttribute('role','switch');b.setAttribute('aria-checked',String(!!done||ready));b.dataset.on=ready?'ready':done?'sent':'off';b.append(mk('span','knob'),mk('span',null,SEQN[n]+(ready?' · loaded':done?' · sent '+fd(localDate(done.at)):'')));
 b.onclick=()=>{if(!l){toast('Pick a client first.',true);return;}if(msSeq===n){msSeq=null;renderTplSide();return;}msSeq=n;setVal('#t-sit',SEQ[n]);setVal('#t-chan','email');buildMsg();};el.append(b);});}
@@ -794,16 +807,23 @@ async function copyStr(t){try{await navigator.clipboard.writeText(t);return true
 
 /* ---------- Sending emails 1, 2, 3 ---------- */
 function withLinks(body,links){if(!links)return body;for(const s of ['Warm regards,','Lubos na gumagalang,','Thank you po,']){const i=body.lastIndexOf(NL+NL+s);if(i>=0)return body.slice(0,i)+NL+NL+links+body.slice(i);}return body+NL+NL+links;}
-async function sendSeqEmail(id,n){const l=norm(getLead(id)||{});if(!l.id)return;if(!l.email){toast('Add this client\'s email first (tap the name).',true);return;}
-await loadMats();const lang=LMAP[l.lang]||'tg';const m=splitEmail(window.MS_TPL.make(l,SEQ[n],lang,'email'));const links=emailLinks(l);
-const body=withLinks(m.body,links);
-const files=n===1?(l.cloud||[]):[];
-if(!SYNC){location.href='mailto:'+encodeURIComponent(l.email)+'?subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(body);setTimeout(()=>logCh(id,'email',n),400);return;}
-const again=l.emailSeq[n]?'Email '+n+' was already sent on '+fd(localDate(l.emailSeq[n].at))+'. Send it again?'+NL+NL:'';
-if(!confirm(again+'Send Email '+n+' to '+l.email+' now?'+NL+NL+'Subject: '+m.subject+NL+NL+body.slice(0,420)+(body.length>420?'…':'')+(files.length?NL+NL+'Attached: '+files.map(f=>f.name).join(', '):'')))return;
-toast('Sending Email '+n+'…');
-try{await sheetPost({action:'email',to:l.email,subject:m.subject,body,fileIds:files.map(f=>f.id)});logCh(id,'email',n);toast('Email '+n+' sent to '+l.email+'.');}
-catch(e){const msg=e&&e.message||'';if(/unknown action/.test(msg))toast('Update your Google Sheet script to send emails directly (see the setup steps).',true);else toast('Email not sent: '+(msg||'no connection')+'.',true);}}
+let EMAILJOB=null;
+async function sendSeqEmail(id,n){const l=norm(getLead(id)||{});if(!l.id)return;
+toast('Preparing Email '+n+'…');await loadMats();const lang=LMAP[l.lang]||'tg';const m=splitEmail(window.MS_TPL.make(l,SEQ[n],lang,'email'));const body=withLinks(m.body,emailLinks(l));
+if(!SYNC){if(!l.email){toast('Add this client\'s email first (tap the name).',true);return;}location.href='mailto:'+encodeURIComponent(l.email)+'?subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(body);setTimeout(()=>logCh(id,'email',n),400);return;}
+openEmailEditor({id,n,to:l.email||'',subject:m.subject,body,files:l.cloud||[],tick:n===1,note:l.emailSeq[n]?'Email '+n+' was already sent on '+fd(localDate(l.emailSeq[n].at))+'. Sending again.':''});}
+function openEmailEditor(job){EMAILJOB=job;$('#em-title').textContent=job.n?'Email '+job.n+' to '+((getLead(job.id)||{}).name||'client'):'Email to '+((getLead(job.id)||{}).name||'client');
+const nt=$('#em-note');nt.textContent=job.note||'';nt.hidden=!job.note;setVal('#em-to',job.to);setVal('#em-sub',job.subject);setVal('#em-body',job.body);err('em-err','');
+const fl=$('#em-files');fl.replaceChildren();if(job.files.length){fl.append(mk('div','label','Attach files'));job.files.forEach(f=>{const lab=mk('label','frow');const cb=document.createElement('input');cb.type='checkbox';cb.value=f.id;cb.checked=!!job.tick;lab.append(cb,' '+f.name);fl.append(lab);});}
+$('#em-send').disabled=false;$('#em-send').textContent='Send';$('#em-modal').hidden=false;document.body.style.overflow='hidden';setTimeout(()=>{const t=$('#em-body');t.focus();try{t.setSelectionRange(0,0);}catch(e){}t.scrollTop=0;$('#em-modal').scrollTop=0;},50);}
+function closeEmailEditor(){$('#em-modal').hidden=true;document.body.style.overflow='';EMAILJOB=null;}
+async function sendFromEditor(){const job=EMAILJOB;if(!job)return;const to=getVal('#em-to').trim(),subject=getVal('#em-sub').trim(),body=getVal('#em-body');
+if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to))return err('em-err','Enter a valid email address.');if(!subject)return err('em-err','Add a subject.');if(!body.trim())return err('em-err','The message is empty.');
+const fileIds=$$('#em-files input:checked').map(c=>c.value);const bt=$('#em-send');bt.disabled=true;bt.textContent='Sending…';
+try{await sheetPost({action:'email',to,subject,body,fileIds});
+const l=getLead(job.id);if(l&&to!==l.email&&!l.email){const x=norm(l);x.email=to;x.updated=new Date().toISOString();saveLead(x);}
+logCh(job.id,'email',job.n||null);if(job.after)job.after();closeEmailEditor();toast((job.n?'Email '+job.n:'Email')+' sent to '+to+'.');}
+catch(e){bt.disabled=false;bt.textContent='Send';const msg=e&&e.message||'';err('em-err',/unknown action/.test(msg)?'Update your Google Sheet script to send emails directly.':'Not sent: '+(msg||'no connection')+'. Try again.');}}
 
 /* ---------- Client files in Google Drive ---------- */
 async function uploadCloud(id,files){if(!SYNC){toast('Connect your Google Sheet first (Admin tab).',true);return;}const list=[...(files||[])];if(!list.length)return;
@@ -862,6 +882,7 @@ const st=mk('div','c-status');st.append(mk('div',si.cls,si.txt));const sel=docum
 c(btn('Write',()=>openTpl(l.id),'link'));
 tb.append(tr);if(openRow===l.id)tb.append(detailRow(l));});}
 
+$('#em-send').onclick=sendFromEditor;$('#em-cancel').onclick=closeEmailEditor;$('#em-modal').addEventListener('click',e=>{if(e.target.id==='em-modal')closeEmailEditor();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#em-modal').hidden)closeEmailEditor();});
 /* ---------- Accounts ---------- */
 const VIEWS=['v-in','v-up','v-wait','v-reset','v-admin'];
 function view(id){VIEWS.forEach(v=>{$('#'+v).hidden=v!==id;});['i-err','u-err','w-err','r-err','ad-err'].forEach(e=>{$('#'+e).hidden=true;});const f=$('#'+id+' input:not([type=file]):not([disabled])');if(f)setTimeout(()=>f.focus(),50);}
