@@ -305,13 +305,7 @@ label.btn2 input{display:none}
 </nav>
 
 <section class="sec" id="today">
-<div class="card" id="legacy-note" hidden style="border-left:4px solid var(--warn)"><h3>Move to the new team account</h3><p class="note">You're signed in with an old-type account that only works on this device, so you don't get the new features (Settings, your own Google Sheet, lead form, colors).</p><ol class="steps">
-<li><a class="link" id="tm-copy" href="#" target="_blank" rel="noopener">Open the RLC template sheet</a> and tap <b>Make a copy</b>. Your copy opens.</li>
-<li>In your copy: <b>Extensions → Apps Script</b>. Then tap the blue <b>Deploy</b> button (top right) → <b>New deployment</b>.</li>
-<li>Tap the gear icon next to "Select type" → <b>Web app</b>. Set Execute as <b>Me</b> and Who has access <b>Anyone</b>. Tap <b>Deploy</b>.</li>
-<li>Google asks for permission: <b>Authorize access</b> → pick your account → <b>Advanced</b> → <b>Go to … (unsafe)</b> → <b>Allow</b>. This is normal: it's your own copy asking you.</li>
-<li>Copy the <b>Web app URL</b> (ends in /exec), paste it below, leave Secret code empty, and tap <b>Connect and sync</b>. Done.</li>
-</ol></div>
+<div class="card" id="legacy-note" hidden style="border-left:4px solid var(--warn)"><h3>Move to the new team account</h3><p class="note">You're signed in with an old-type account that only works on this device, so you don't get the new features (Settings, your own Google Sheet, lead form, colors).</p><ol class="steps"><li>Tap <b>Back up</b> on the Clients tab to save your clients to a file.</li><li>Tap <b>Sign out</b>, then <b>Request an account</b>. Lourjel approves it.</li><li>Sign in with the new account, connect your Google Sheet in Settings, then tap <b>Restore</b> and pick your backup file.</li></ol></div>
 <div class="card empty" id="empty" hidden><h3>Start your client list</h3><button class="btn add" type="button">Add your first client</button></div>
 <div id="has">
 <div class="kpis">
@@ -424,10 +418,10 @@ label.btn2 input{display:none}
 <p class="note"><b>Before you start:</b> make sure Chrome is signed in to <b>your own</b> Google account (your photo at the top right of Google Sheets).</p>
 <ol class="steps">
 <li><a class="link" id="tm-copy" href="#" target="_blank" rel="noopener">Open the RLC template sheet</a> and tap <b>Make a copy</b>. Your copy opens.</li>
-<li>In your copy: <b>Extensions → Apps Script</b>. At the top, <b>START_HERE</b> is already picked next to <b>▶ Run</b>. Tap <b>Run</b>.</li>
-<li>Google asks for permission: <b>Review permissions</b> → pick your account → <b>Advanced</b> → <b>Go to … (unsafe)</b> → <b>Allow</b>. This is normal: it's your own copy asking you.</li>
-<li>Tap <b>Deploy → New deployment</b> → gear icon → <b>Web app</b>. Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b>. Copy the <b>Web app URL</b> and paste it below.</li>
-<li>Go back to your sheet. A new tab <b>RLC Setup</b> shows <b>Your secret code</b>. Copy it below, then tap <b>Connect and sync</b>.</li>
+<li>In your copy: <b>Extensions → Apps Script</b>. Then tap the blue <b>Deploy</b> button (top right) → <b>New deployment</b>.</li>
+<li>Tap the gear icon next to "Select type" → <b>Web app</b>. Set Execute as <b>Me</b> and Who has access <b>Anyone</b>. Tap <b>Deploy</b>.</li>
+<li>Google asks for permission: <b>Authorize access</b> → pick your account → <b>Advanced</b> → <b>Go to … (unsafe)</b> → <b>Allow</b>. This is normal: it's your own copy asking you.</li>
+<li>Copy the <b>Web app URL</b> (ends in /exec), paste it below, leave Secret code empty, and tap <b>Connect and sync</b>. Done.</li>
 </ol>
 <p class="note">Then put your amenities, unit photos, computations and presentations in the <b>RLC Materials</b> folder in your Google Drive.</p>
 </div>
@@ -587,7 +581,7 @@ function aesDec(key,iv,ct){return crypto.subtle.decrypt({name:'AES-GCM',iv},key,
 const pubSign=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_SIGN),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
 const pubEnc=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_ENC),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
 async function verifySig(msg,sig){try{return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await pubSign(),fromB64(sig),te.encode(msg));}catch(e){return false;}}
-const BUILD='20261123171048';
+const BUILD='20261123171643';
 (function(){let shown=false;async function check(){if(shown||!/^https?:/.test(location.protocol)||BUILD.indexOf('__')===0)return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){shown=true;const d=document.createElement('div');d.className='update-bar';d.innerHTML='A new version of the tracker is ready. ';const b=document.createElement('button');b.className='btn';b.type='button';b.textContent='Update now';b.onclick=()=>location.reload();d.append(b);document.body.append(d);}}catch(e){}}
 setTimeout(check,3000);setInterval(check,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});})();
 const THEMES={navy:['RLC Navy','#212988','#0b1a3d','#daa900','#8a6a00','#142a5c','#2b3f7a','#8c9bff'],emerald:['Emerald','#0f5c45','#072a20','#d4a72c','#7a5e0c','#0f3d30','#1f5a48','#6fd3a8'],maroon:['Maroon','#7a1c2e','#2a0a10','#e0b04a','#86600a','#4a1420','#6b2a38','#ff9aab'],teal:['Teal','#0e6474','#06262d','#f2a541','#8f5300','#0d3d46','#1d5a66','#6fd6e6'],purple:['Purple','#4b2a86','#1a0f33','#e8b923','#7f640a','#2c1b52','#45306f','#b79cff'],charcoal:['Charcoal','#2b2f36','#121417','#c9a227','#76600f','#23272d','#3a3f47','#b8c0cc'],rose:['Rose','#a23b62','#2e0f1c','#f0c05a','#835600','#4d1a30','#6e2c47','#ff9cc2'],ocean:['Ocean','#1f5fa8','#0a2142','#f5b82e','#865f00','#123a6b','#24508a','#8ec5ff']};
