@@ -134,7 +134,8 @@ select.sel{width:auto}
 .cbtn.off{opacity:.35}
 .chw{display:flex;flex-direction:column;align-items:center;gap:2px}.chu{font-size:10px;color:var(--muted);white-space:nowrap}.chu.rep{color:var(--ok)}
 .c-note{width:170px;min-width:140px;font:inherit;font-size:12px;padding:4px 6px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink);resize:vertical}
-.mpick{display:inline-flex;gap:6px;align-items:center;cursor:pointer;padding:2px 8px;border:1px solid var(--line);border-radius:var(--r)}.mpick.on{border-color:var(--ok);color:var(--ok);font-weight:600}
+.mpick{display:inline-flex;gap:6px;align-items:center;cursor:pointer;padding:2px 8px;border:1px solid var(--line);border-radius:var(--r)}.sub2{padding-left:40px}.mfile{display:inline-flex;gap:6px;align-items:center;cursor:pointer}.mfile.on{color:var(--ok);font-weight:600}.pjrow{margin-top:10px;font-weight:600}.selbar{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--muted);margin-bottom:4px}.addproj{margin-top:12px;font:inherit;font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink)}
+.mpick.on{border-color:var(--ok);color:var(--ok);font-weight:600}
 .c-status{display:flex;flex-direction:column;gap:4px;min-width:170px}
 .st-bad{color:var(--bad);font-weight:600;font-size:12px}.st-ok{color:var(--ok);font-weight:600;font-size:12px}.st-mid{color:var(--muted);font-size:12px}
 .st-sel{font:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink)}
@@ -799,12 +800,17 @@ let MATS=null,MATS_AT=0,matsLoading=null;
 async function loadMats(force){if(!SYNC)return null;if(MATS&&!force&&Date.now()-MATS_AT<10*60*1000)return MATS;if(matsLoading)return matsLoading;
 matsLoading=(async()=>{try{const j=await sheetPost({action:'materials'});MATS={projects:j.projects||[],root:j.root||''};}catch(e){MATS={projects:[],old:/unknown action/.test(e&&e.message||''),err:true};}MATS_AT=Date.now();matsLoading=null;return MATS;})();return matsLoading;}
 function matFor(name){if(!MATS||!name)return null;const n=String(name).toLowerCase();return (MATS.projects||[]).find(p=>p.name.toLowerCase()===n)||null;}
-function clientProjects(l){return (l.projects||[]).concat(l.otherProp?[l.otherProp]:[]);}
-function selMats(l){const S=l.mats||[];const out=[];clientProjects(l).forEach(p=>{const m=matFor(p);if(!m)return;m.cats.forEach(c=>{if(S.includes(m.name+'/'+c.name))out.push({p:m,c});});});return out;}
-function toggleMat(id,key){const l=norm(getLead(id));const S=(l.mats||[]).slice();const i=S.indexOf(key);if(i>=0)S.splice(i,1);else S.push(key);l.mats=S;l.updated=new Date().toISOString();saveLead(l);}
-function matFiles(l){return selMats(l).flatMap(x=>x.c.files.map(f=>Object.assign({mat:x.c.name},f)));}
-function chatLink(l){const sel=selMats(l);if(sel.length)return sel.map(x=>(sel.length>1&&clientProjects(l).length>1?x.p.name+' ':'')+x.c.name+': '+x.c.url).join(NL);for(const p of clientProjects(l)){const m=matFor(p);if(m&&m.cats.some(c=>c.files.length))return m.url;}return '';}
-function emailLinks(l){const out=[];const sel=selMats(l);clientProjects(l).forEach(p=>{const m=matFor(p);if(!m)return;const cats=m.cats.filter(c=>c.files.length&&(!sel.length||sel.some(x=>x.c===c)));if(!cats.length)return;out.push(m.name+':');cats.forEach(c=>out.push('• '+c.name+': '+c.url));});return out.length?'Photos and details'+NL+out.join(NL):'';}
+function clientProjects(l){return (l.projects||[]).concat(l.otherProp?String(l.otherProp).split(/\s*,\s*/).filter(Boolean):[]);}
+function selSet(l){const S=new Set(l.mf||[]);(l.mats||[]).forEach(k=>{const i=k.indexOf('/');const m=matFor(k.slice(0,i));const c=m&&m.cats.find(x=>x.name===k.slice(i+1));if(c)c.files.forEach(f=>S.add(f.id));});return S;}
+function selMats(l){const S=selSet(l);const out=[];clientProjects(l).forEach(p=>{const m=matFor(p);if(!m)return;m.cats.forEach(c=>{const fs=c.files.filter(f=>S.has(f.id));if(fs.length)out.push({p:m,c,files:fs,all:fs.length===c.files.length});});});return out;}
+function setSel(id,ids,on){const l=norm(getLead(id));const S=selSet(l);ids.forEach(x=>on?S.add(x):S.delete(x));l.mf=[...S];delete l.mats;l.updated=new Date().toISOString();saveLead(l);}
+function matFiles(l){return selMats(l).flatMap(x=>x.files.map(f=>Object.assign({mat:x.p.name+' · '+x.c.name},f)));}
+const baseName=n=>String(n).replace(/\.[a-z0-9]{2,5}$/i,'');
+function selLines(l,bullet){const sel=selMats(l);const multi=new Set(sel.map(x=>x.p.name)).size>1;const out=[];let last='';
+sel.forEach(x=>{if(multi&&x.p.name!==last){if(out.length)out.push('');out.push(x.p.name+':');last=x.p.name;}if(x.all)out.push(bullet+x.c.name+': '+x.c.url);else x.files.forEach(f=>out.push(bullet+x.c.name+' – '+baseName(f.name)+': '+f.url));});return out;}
+function chatLink(l){const L=selLines(l,'');if(L.length)return L.join(NL);for(const p of clientProjects(l)){const m=matFor(p);if(m&&m.cats.some(c=>c.files.length))return m.url;}return '';}
+function addClientProject(id,name){const l=norm(getLead(id));if(clientProjects(l).some(p=>p.toLowerCase()===name.toLowerCase()))return;if($$('.f-proj').some(c=>c.value===name))l.projects=l.projects.concat([name]);else l.otherProp=l.otherProp?l.otherProp+', '+name:name;l.updated=new Date().toISOString();saveLead(l);toast(name+' added for '+l.name+'.');}
+function emailLinks(l){const SL=selLines(l,'• ');if(SL.length)return 'Photos and details'+NL+SL.join(NL);const out=[];const sel=selMats(l);clientProjects(l).forEach(p=>{const m=matFor(p);if(!m)return;const cats=m.cats.filter(c=>c.files.length&&(!sel.length||sel.some(x=>x.c===c)));if(!cats.length)return;out.push(m.name+':');cats.forEach(c=>out.push('• '+c.name+': '+c.url));});return out.length?'Photos and details'+NL+out.join(NL):'';}
 
 /* ---------- Message for a quick-send button ---------- */
 function quickMsg(l,k){const a=analyze(l);const lang=LMAP[l.lang]||'tg';const txt=window.MS_TPL.make(l,a.sit,lang,k==='sms'?'sms':'viber');const link=chatLink(l);return link?txt+NL+NL+(lang==='en'?'Photos and details:':'Photos at details:')+(link.includes(NL)||selMats(l).length?NL:' ')+link:txt;}
@@ -847,12 +853,12 @@ let SHARE_READY=null;
 async function sharePhotos(id,b){const l=norm(getLead(id));const F=matFiles(l);
 if(SHARE_READY&&SHARE_READY.id===id){const files=SHARE_READY.files;try{await navigator.share({files,text:quickMsg(l,'viber')});logCh(id,'viber');}catch(e){if(e&&e.name!=='AbortError')toast('Sharing was blocked. Send the links instead.',true);}SHARE_READY=null;b.textContent='Send photos to Viber or WhatsApp';return;}
 b.disabled=true;b.textContent='Getting '+F.length+' file'+(F.length>1?'s':'')+'…';const out=[];
-for(const f of F.slice(0,10)){try{const j=await sheetPost({action:'file',id:f.id});const bin=atob(j.data);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);out.push(new File([u],j.name,{type:j.mime}));}catch(e){if(/unknown action/.test(e&&e.message||'')){b.disabled=false;b.textContent='Send photos to Viber or WhatsApp';toast('Update your Google Sheet script to send photos.',true);return;}}}
+for(const f of F.slice(0,20)){try{const j=await sheetPost({action:'file',id:f.id});const bin=atob(j.data);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);out.push(new File([u],j.name,{type:j.mime}));}catch(e){if(/unknown action/.test(e&&e.message||'')){b.disabled=false;b.textContent='Send photos to Viber or WhatsApp';toast('Update your Google Sheet script to send photos.',true);return;}}}
 b.disabled=false;if(!out.length||!navigator.canShare({files:out})){b.textContent='Send photos to Viber or WhatsApp';toast('This phone cannot share these files. The links are in your messages.',true);return;}
 SHARE_READY={id,files:out};b.textContent='Tap again to share '+out.length+' file'+(out.length>1?'s':'');toast('Ready. Tap the button again, then choose Viber or WhatsApp.');}
 
 /* ---------- Clients list ---------- */
-let openRow=null;
+let openRow=null;const OPENCAT=new Set();
 const PLAN_KEYS=['viber','whatsapp','sms','call'];
 function chUse(l,k){const L=l.log.filter(e=>e.ch===k&&e.s!=='none');const last=L.length?L[L.length-1].at:'';return {n:L.length,last,today:!!last&&localDate(last)===today()};}
 function ago(iso){const d=days(today(),localDate(iso));return d<=0?'today':d===1?'yesterday':d+'d ago';}
@@ -879,11 +885,15 @@ const c2=mk('div');c2.append(mk('h4',null,'Property materials'));const ml=mk('di
 if(!SYNC)ml.append(mk('p','note','Connect your Google Sheet (Admin tab) to see your Drive folders.'));
 else if(!MATS){ml.append(mk('p','note','Loading your Drive folders…'));loadMats().then(()=>renderClients());}
 else if(MATS.old)ml.append(mk('p','note','Update your Google Sheet script to use Drive folders.'));
-else{const ps=clientProjects(l).map(matFor).filter(Boolean);if(!ps.length)ml.append(mk('p','note',clientProjects(l).length?'No Drive folder named '+clientProjects(l).join(' or ')+' inside RLC Materials.':'Choose the client\'s project first (tap the name).'));
-if(ps.length)ml.append(mk('p','note','Tick what to send. Emails attach the files. Viber, WhatsApp and SMS get the links.'));const S=l.mats||[];
-ps.forEach(p=>{const ph=mk('div','frow');const pa=mk('a','link',p.name);pa.href=p.url;pa.target='_blank';pa.rel='noopener';ph.append(pa);ml.append(ph);
-p.cats.forEach(c=>{const key=p.name+'/'+c.name;const on=S.includes(key);const cr=mk('div','frow sub');const lab=mk('label','mpick'+(on?' on':''));const cb=document.createElement('input');cb.type='checkbox';cb.checked=on;cb.disabled=!c.files.length;cb.onchange=()=>toggleMat(l.id,key);lab.append(cb,' '+c.name+' ('+c.files.length+')');cr.append(lab);const oa=mk('a','link','Open');oa.href=c.url;oa.target='_blank';oa.rel='noopener';cr.append(oa);ml.append(cr);});});
-const sel=matFiles(l);if(sel.length&&navigator.share&&navigator.canShare){const sb=btn('Send photos to Viber or WhatsApp',()=>sharePhotos(l.id,sb),'btn2');sb.style.marginTop='8px';ml.append(sb);}
+else{const ps=[...new Set(clientProjects(l).map(matFor).filter(Boolean))];if(!ps.length)ml.append(mk('p','note',clientProjects(l).length?'No Drive folder named '+clientProjects(l).join(' or ')+' inside RLC Materials.':'Add the client\'s projects below.'));
+const S=selSet(l);const SF=matFiles(l);
+if(ps.length){const sm=mk('div','selbar');sm.append(mk('span',null,SF.length?SF.length+' file'+(SF.length>1?'s':'')+' selected from '+new Set(SF.map(f=>f.mat.split(' · ')[0])).size+' project'+(new Set(SF.map(f=>f.mat.split(' · ')[0])).size>1?'s':''):'Tick what to send. Emails attach the files. Viber, WhatsApp and SMS get the links.'));if(SF.length)sm.append(btn('Clear',()=>setSel(l.id,SF.map(f=>f.id),false)));ml.append(sm);}
+ps.forEach(p=>{const ph=mk('div','frow pjrow');const pa=mk('a','link',p.name);pa.href=p.url;pa.target='_blank';pa.rel='noopener';ph.append(mk('b',null,''),pa);const all=p.cats.flatMap(c=>c.files);if(all.length)ph.append(btn(all.every(f=>S.has(f.id))?'Untick all':'Tick all',()=>setSel(l.id,all.map(f=>f.id),!all.every(f=>S.has(f.id)))));ml.append(ph);
+p.cats.forEach(c=>{const key=l.id+'|'+p.name+'/'+c.name;const n=c.files.filter(f=>S.has(f.id)).length;const on=n&&n===c.files.length;const cr=mk('div','frow sub');const lab=mk('label','mpick'+(n?' on':''));const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!on;cb.indeterminate=n>0&&!on;cb.disabled=!c.files.length;cb.onchange=()=>setSel(l.id,c.files.map(f=>f.id),cb.checked);lab.append(cb,' '+c.name+' ('+(n&&!on?n+' of ':'')+c.files.length+')');cr.append(lab);
+const exp=OPENCAT.has(key)?true:OPENCAT.has(key+'#x')?false:(n>0&&!on);if(c.files.length>1)cr.append(btn(exp?'Hide files':'Choose files',()=>{OPENCAT.delete(key);OPENCAT.delete(key+'#x');OPENCAT.add(exp?key+'#x':key);renderClients();}));const oa=mk('a','link','Open');oa.href=c.url;oa.target='_blank';oa.rel='noopener';cr.append(oa);ml.append(cr);
+if(exp&&c.files.length>1)c.files.forEach(f=>{const fr=mk('div','frow sub2');const fl2=mk('label','mfile'+(S.has(f.id)?' on':''));const fc=document.createElement('input');fc.type='checkbox';fc.checked=S.has(f.id);fc.onchange=()=>setSel(l.id,[f.id],fc.checked);fl2.append(fc,' '+f.name);const fo=mk('a','link','Open');fo.href=f.url;fo.target='_blank';fo.rel='noopener';fr.append(fl2,fo);ml.append(fr);});});});
+const others=(MATS.projects||[]).filter(m=>!ps.includes(m));if(others.length){const ad=document.createElement('select');ad.className='addproj';ad.append(new Option('+ Add another project…',''));others.forEach(m=>ad.append(new Option(m.name,m.name)));ad.onchange=()=>{if(ad.value)addClientProject(l.id,ad.value);};ml.append(ad);}
+const sel=SF;if(sel.length&&navigator.share&&navigator.canShare){const sb=btn('Send photos to Viber or WhatsApp',()=>sharePhotos(l.id,sb),'btn2');sb.style.marginTop='8px';ml.append(sb);}
 ml.append(btn('Refresh folders',()=>{loadMats(true).then(()=>renderClients());}));}
 c2.append(ml);const c3=mk('div');c3.append(mk('h4',null,'Activity'));const al=mk('div','flist');const LG=l.log.filter(e=>e.s!=='none').slice(-12).reverse();const NM={viber:'Viber',whatsapp:'WhatsApp',sms:'SMS',call:'Call',email:'Email',imessage:'iMessage'};
 const sm=mk('p','note');sm.textContent=['viber','whatsapp','sms','call','email'].map(k=>NM[k]+' '+chUse(l,k).n+'×').join(' · ');al.append(sm);
