@@ -132,6 +132,8 @@ select.sel{width:auto}
 .cbtn.done,.esw.done{border-color:var(--ok);background:var(--ok);color:#fff}
 .cbtn.rep{border-color:var(--ok);color:var(--ok)}
 .cbtn.off{opacity:.35}
+.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;background:var(--line);color:var(--ink)}.tag.ok{background:var(--ok);color:#fff}.tag.warn{background:var(--warn);color:#fff}
+.steps{margin:8px 0 10px;padding-left:20px;font-size:13px;line-height:1.55}.steps li{margin-bottom:6px}
 .chw{display:flex;flex-direction:column;align-items:center;gap:2px}.chu{font-size:10px;color:var(--muted);white-space:nowrap}.chu.rep{color:var(--ok)}
 .c-note{width:170px;min-width:140px;font:inherit;font-size:12px;padding:4px 6px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink);resize:vertical}
 .mpick{display:inline-flex;gap:6px;align-items:center;cursor:pointer;padding:2px 8px;border:1px solid var(--line);border-radius:var(--r)}.sub2{padding-left:40px}.mfile{display:inline-flex;gap:6px;align-items:center;cursor:pointer}.mfile.on{color:var(--ok);font-weight:600}.pjrow{margin-top:10px;font-weight:600}.selbar{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--muted);margin-bottom:4px}.addproj{margin-top:12px;font:inherit;font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink)}
@@ -197,7 +199,7 @@ label.btn2 input{display:none}
 <label class="field">Password<input id="i-pass" type="password" autocomplete="current-password" required></label>
 <p class="gate-err" id="i-err" hidden></p>
 <button class="btn" type="submit">Sign in</button>
-<div class="gate-links"><button class="link" type="button" data-go="v-reset">Forgot password?</button><button class="link" type="button" data-go="v-up">Request an account</button></div>
+<div class="gate-links"><button class="link" type="button" data-go="v-treset">Forgot password?</button><button class="link" type="button" data-go="v-up">Request an account</button></div>
 <button class="btn2" type="button" id="adm-key">Admin sign in with admin key</button>
 </form>
 </div>
@@ -216,13 +218,36 @@ label.btn2 input{display:none}
 <input type="file" id="ad-file" accept=".json,application/json" hidden>
 <div id="v-up" hidden>
 <h1>Request an account</h1>
+<p class="note">Lourjel approves each account. You'll get an email when you're in.</p>
 <form id="f-up" autocomplete="on">
+<label class="field">Full name<input id="u-name" autocomplete="name" required></label>
+<label class="field">Email<input id="u-email" type="email" autocomplete="email" required></label>
+<label class="field">Mobile number<input id="u-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="09xx xxx xxxx"></label>
 <label class="field">Username<input id="u-user" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
-<label class="field">Your email<input id="u-email" type="email" autocomplete="email" required></label>
 <label class="field">Password<input id="u-pass" type="password" autocomplete="new-password" required></label>
 <label class="field">Confirm password<input id="u-pass2" type="password" autocomplete="new-password" required></label>
 <p class="gate-err" id="u-err" hidden></p>
-<button class="btn" type="submit">Continue</button>
+<button class="btn" type="submit" id="u-go">Send request</button>
+<div class="gate-links"><button class="link" type="button" data-go="v-in">Back to sign in</button></div>
+</form>
+</div>
+<div id="v-sent" hidden>
+<h1>Request sent</h1>
+<p class="note" id="sent-msg">Lourjel will review it. You'll get an email when your account is approved. Then sign in on any phone or computer with your username and password.</p>
+<div class="gate-links"><button class="link" type="button" data-go="v-in">Back to sign in</button></div>
+</div>
+<div id="v-treset" hidden>
+<h1>Reset password</h1>
+<form id="f-treset">
+<label class="field">Username<input id="tr-user" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+<div id="tr-step2" class="stack" hidden>
+<p class="note">We emailed a 6-digit code to the email on your account. It works for 30 minutes.</p>
+<label class="field">Code<input id="tr-code" inputmode="numeric" autocomplete="one-time-code"></label>
+<label class="field">New password<input id="tr-pass" type="password" autocomplete="new-password"></label>
+<label class="field">Confirm new password<input id="tr-pass2" type="password" autocomplete="new-password"></label>
+</div>
+<p class="gate-err" id="tr-err" hidden></p>
+<button class="btn" type="submit" id="tr-go">Email me a code</button>
 <div class="gate-links"><button class="link" type="button" data-go="v-in">Back to sign in</button></div>
 </form>
 </div>
@@ -259,7 +284,7 @@ label.btn2 input{display:none}
 <div id="app" hidden>
 <div class="band"><div class="band-in">
 <div class="who"><span>Signed in as <b id="who-name"></b></span><button class="link" id="acct-open" type="button">Delete account</button><button class="link" id="signout" type="button">Sign out</button></div>
-<p class="eyebrow">RLC by Lourjel Quezada · Executive Property Specialist</p>
+<p class="eyebrow" id="hdr-brand">RLC by Lourjel Quezada · Executive Property Specialist</p>
 <h1>Client Follow-up Tracker</h1>
 <p class="takeaway" id="takeaway"></p>
 </div></div>
@@ -378,6 +403,23 @@ label.btn2 input{display:none}
 
 <section class="sec" id="admin" hidden>
 <div class="grid">
+<div class="card adm-only" id="team-card"><h3>Team</h3>
+<p class="note">Teammates sign in with their own username and password and keep their clients in their own Google account. You approve who can sign in. You can't see their clients.</p>
+<div class="scroll"><table><thead><tr><th>Name</th><th>Username</th><th>Email · Mobile</th><th>Status</th><th>Last active</th><th></th></tr></thead><tbody id="tm-rows"></tbody></table></div>
+<label class="field" style="margin-top:14px">Template sheet link (teammates copy this)<input id="tm-tpl" placeholder="https://docs.google.com/spreadsheets/d/…" autocapitalize="none" spellcheck="false"></label>
+<div class="bar" style="margin:10px 0 0"><button class="btn2" id="tm-tpl-save" type="button">Save link</button><button class="link" id="tm-refresh" type="button">Refresh</button></div>
+<p class="note" id="tm-status" style="margin-top:8px"></p>
+</div>
+<div class="card team-only" id="tm-setup"><h3>Connect your Google account</h3>
+<p class="note">Do this once, on a computer. Your clients, photos and computations stay in your own Google account. Nobody else can see them.</p>
+<ol class="steps">
+<li><a class="link" id="tm-copy" href="#" target="_blank" rel="noopener">Open the RLC template sheet</a> and tap <b>Make a copy</b>.</li>
+<li>In your copy, open the menu <b>RLC Tracker → Set up / show my secret code</b>. Tap <b>Allow</b> for your Google account. Copy the secret code it shows.</li>
+<li>Go to <b>Extensions → Apps Script → Deploy → New deployment</b>. Choose type <b>Web app</b>, Execute as <b>Me</b>, Who has access <b>Anyone</b>. Tap <b>Deploy</b> and copy the <b>Web app URL</b>.</li>
+<li>Paste both below and tap <b>Connect and sync</b>.</li>
+</ol>
+<p class="note">Then put your amenities, unit photos, computations and presentations in the <b>RLC Materials</b> folder in your Google Drive.</p>
+</div>
 <div class="card"><h3>Google Sheet</h3>
 <p class="note">Connect your leads sheet once on each device. Leads then load from the sheet and every change saves back to it.</p>
 <label class="field">Web app URL<input id="gs-url" placeholder="https://script.google.com/macros/s/…/exec" autocapitalize="none" spellcheck="false"></label>
@@ -385,7 +427,21 @@ label.btn2 input{display:none}
 <div class="bar" style="margin:12px 0 0"><button class="btn" id="gs-save" type="button">Connect and sync</button><button class="btn2 sync-now" type="button" hidden>Sync now</button><button class="link" id="gs-off" type="button" hidden>Disconnect</button></div>
 <p class="note" id="gs-status" style="margin-top:8px">Not connected.</p>
 </div>
-<div class="card"><h3>Approve a request</h3>
+<div class="card team-only" id="tm-formcard"><h3>Your lead form</h3>
+<p class="note" id="tm-form-note">Connect your Google Sheet first.</p>
+<div id="tm-form" hidden><input id="tm-form-url" readonly style="width:100%;font-size:12px;padding:8px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink)">
+<div class="bar" style="margin:10px 0"><button class="btn2" id="tm-form-copy" type="button">Copy link</button><a class="btn2" id="tm-form-open" href="#" target="_blank" rel="noopener">Open form</a></div>
+<img id="tm-qr" alt="QR code for your lead form" width="180" height="180" style="background:#fff;padding:8px;border-radius:var(--r)"></div>
+</div>
+<div class="card team-only" id="tm-sigcard"><h3>Your signature</h3>
+<p class="note">Used in your templates, messages and emails.</p>
+<label class="field">Name<input id="sg-name"></label>
+<label class="field">Title<input id="sg-role" placeholder="Property Specialist"></label>
+<label class="field">Mobile<input id="sg-phone" type="tel"></label>
+<label class="field">Extra line (optional)<input id="sg-extra" placeholder="facebook.com/yourpage"></label>
+<div class="bar" style="margin:10px 0 0"><button class="btn2" id="sg-save" type="button">Save signature</button></div>
+</div>
+<div class="card adm-only" hidden><h3>Approve a request</h3>
 <label class="field">Paste the request email or code<textarea id="a-req" class="code" rows="4" autocapitalize="none" spellcheck="false"></textarea></label>
 <div class="bar" style="margin:10px 0 0"><button class="btn2" id="a-check" type="button">Check</button></div>
 <div id="a-info" class="note" style="margin-top:10px"></div>
@@ -395,8 +451,8 @@ label.btn2 input{display:none}
 <div class="bar" style="margin:0"><a class="btn" id="a-mail" href="#">Email reply</a><button class="btn2" id="a-copy" type="button">Copy code</button></div>
 </div>
 </div>
-<div class="card"><h3>Approved</h3><div class="scroll"><table><thead><tr><th>Username</th><th>Email</th><th>Type</th><th>Date</th><th></th></tr></thead><tbody id="a-log"></tbody></table></div></div>
-<div class="card"><h3>Accounts on this device</h3><div class="scroll"><table><thead><tr><th>Username</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody id="a-users"></tbody></table></div></div>
+<div class="card adm-only" hidden><h3>Approved</h3><div class="scroll"><table><thead><tr><th>Username</th><th>Email</th><th>Type</th><th>Date</th><th></th></tr></thead><tbody id="a-log"></tbody></table></div></div>
+<div class="card adm-only"><h3>Accounts on this device</h3><div class="scroll"><table><thead><tr><th>Username</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody id="a-users"></tbody></table></div></div>
 </div>
 </section>
 </div>
@@ -519,16 +575,16 @@ function aesDec(key,iv,ct){return crypto.subtle.decrypt({name:'AES-GCM',iv},key,
 const pubSign=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_SIGN),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
 const pubEnc=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_ENC),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
 async function verifySig(msg,sig){try{return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await pubSign(),fromB64(sig),te.encode(msg));}catch(e){return false;}}
-let USER=null,KEY=null,leads=[],ADMIN=null,APPROVALS=[],SYNC=null,DELQ=[];
+let USER=null,KEY=null,leads=[],ADMIN=null,APPROVALS=[],SYNC=null,DELQ=[],TEAM=null,SIG=null;
 function encBytes(bytes){return aesEnc(KEY,bytes);}
 function decBytes(iv,ct){return aesDec(KEY,iv,ct);}
 const USERS_KEY='rlc_sec_users';
 const getUsers=()=>{try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}catch(e){return {};}};
 const putUser=(u,rec)=>{const all=getUsers();all[u]=rec;localStorage.setItem(USERS_KEY,JSON.stringify(all));};
-const dataKeyName=()=>'rlc_sec_data_'+USER;
+const dataKeyName=()=>(TEAM?'rlc_team_data_':'rlc_sec_data_')+USER;
 let saveChain=Promise.resolve();
-function persist(noSync){render();if(!noSync)scheduleSync();const snap=JSON.stringify({leads,admin:ADMIN,approvals:APPROVALS,sync:SYNC,delq:DELQ});const u=USER;saveChain=saveChain.then(async()=>{if(u!==USER)return;const {iv,ct}=await encBytes(te.encode(snap));localStorage.setItem(dataKeyName(),JSON.stringify({iv:toB64(iv),ct:toB64(ct)}));}).catch(()=>toast('Could not save. Your browser storage may be full.',true));}
-async function loadData(){leads=[];ADMIN=null;APPROVALS=[];SYNC=null;DELQ=[];const raw=localStorage.getItem(dataKeyName());if(!raw)return;const j=JSON.parse(raw);const d=JSON.parse(td.decode(await decBytes(fromB64(j.iv),fromB64(j.ct))));if(Array.isArray(d)){leads=d;return;}leads=d.leads||[];ADMIN=d.admin||null;APPROVALS=d.approvals||[];SYNC=d.sync||null;DELQ=d.delq||[];}
+function persist(noSync){render();if(!noSync)scheduleSync();const snap=JSON.stringify({leads,admin:ADMIN,approvals:APPROVALS,sync:SYNC,delq:DELQ,sig:SIG});const u=USER;saveChain=saveChain.then(async()=>{if(u!==USER)return;const {iv,ct}=await encBytes(te.encode(snap));localStorage.setItem(dataKeyName(),JSON.stringify({iv:toB64(iv),ct:toB64(ct)}));}).catch(()=>toast('Could not save. Your browser storage may be full.',true));}
+async function loadData(){leads=[];ADMIN=null;APPROVALS=[];SYNC=null;DELQ=[];const raw=localStorage.getItem(dataKeyName());if(!raw)return;const j=JSON.parse(raw);const d=JSON.parse(td.decode(await decBytes(fromB64(j.iv),fromB64(j.ct))));if(Array.isArray(d)){leads=d;return;}leads=d.leads||[];ADMIN=d.admin||null;APPROVALS=d.approvals||[];SYNC=d.sync||null;DELQ=d.delq||[];SIG=d.sig||null;}
 const getLead=id=>leads.find(l=>l.id===id)||null;
 function saveLead(row){const i=leads.findIndex(l=>l.id===row.id);if(i>=0)leads[i]=row;else leads.push(row);persist();}
 
@@ -787,10 +843,10 @@ function renderSync(){const t=syncBusy?'Syncing with Google Sheet…':syncErr?sy
 $$('.sync-pill').forEach(e=>{e.hidden=!SYNC;e.textContent=t;e.classList.toggle('bad',!!syncErr&&!syncBusy);});$$('.sync-now').forEach(b=>{b.hidden=!SYNC;});
 const st=$('#gs-status');if(st)st.textContent=SYNC?(t||'Connected.'):'Not connected.';const off=$('#gs-off');if(off)off.hidden=!SYNC;}
 const DEFAULT_SHEET_URL='https://script.google.com/macros/s/AKfycbyaO09giCcTY8Y9WIcrWIQ6Bi0qa2wphtVf2ul0-O57qOKlec_v7w_MS22mlPSWhPyT/exec';
-function fillSyncForm(){setVal('#gs-url',SYNC?SYNC.url:DEFAULT_SHEET_URL);setVal('#gs-key',SYNC?SYNC.key:'');renderSync();}
-$('#gs-save').onclick=async()=>{const url=getVal('#gs-url').trim(),key=getVal('#gs-key').trim();if(!/^https:\/\/script\.google(usercontent)?\.com\//.test(url)){$('#gs-status').textContent='Paste the Web app URL from Apps Script. It starts with https://script.google.com/';return;}if(!key){$('#gs-status').textContent='Paste the secret code.';return;}
-SYNC={url,key};persist(true);await syncNow();if(syncErr){$('#gs-status').textContent=syncErr;}else{toast('Connected to your Google Sheet.');}};
-$('#gs-off').onclick=()=>{if(!confirm('Disconnect the Google Sheet on this device? Your clients stay in the sheet.'))return;SYNC=null;lastSync=null;syncErr='';persist(true);fillSyncForm();};
+function fillSyncForm(){setVal('#gs-url',SYNC?SYNC.url:(TEAM?'':DEFAULT_SHEET_URL));setVal('#gs-key',SYNC?SYNC.key:'');renderSync();}
+$('#gs-save').onclick=async()=>{const url=getVal('#gs-url').trim(),key=getVal('#gs-key').trim();if(!/^https:\/\/script\.google(usercontent)?\.com\//.test(url)){$('#gs-status').textContent='Paste the Web app URL from Apps Script. It starts with https://script.google.com/';return;}if(!key){$('#gs-status').textContent='Paste the secret code.';return;}if(TEAM&&url===DEFAULT_SHEET_URL){$('#gs-status').textContent='That is Lourjel\'s sheet. Paste the Web app URL from your own copy.';return;}
+SYNC={url,key};persist(true);await syncNow();if(syncErr){$('#gs-status').textContent=syncErr;}else{toast('Connected to your Google Sheet.');if(TEAM){saveTeamConfig();MATS=null;renderTeamSide();}if(ADMIN)renderTeam();}};
+$('#gs-off').onclick=()=>{if(!confirm('Disconnect the Google Sheet on this device? Your clients stay in the sheet.'))return;SYNC=null;lastSync=null;syncErr='';persist(true);fillSyncForm();if(TEAM){saveTeamConfig();renderTeamSide();}};
 $$('.sync-now').forEach(b=>b.addEventListener('click',()=>syncNow()));
 setInterval(()=>{if(SYNC&&USER&&document.visibilityState==='visible')syncNow();},60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&SYNC&&USER)syncNow();});
@@ -835,7 +891,7 @@ function closeEmailEditor(){$('#em-modal').hidden=true;document.body.style.overf
 async function sendFromEditor(){const job=EMAILJOB;if(!job)return;const to=getVal('#em-to').trim(),subject=getVal('#em-sub').trim(),body=getVal('#em-body');
 if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to))return err('em-err','Enter a valid email address.');if(!subject)return err('em-err','Add a subject.');if(!body.trim())return err('em-err','The message is empty.');if($$('#em-files input:checked').reduce((s,c)=>s+(+c.dataset.size||0),0)>24*1048576)return err('em-err','The attachments are over 25 MB. Untick some files.');
 const fileIds=$$('#em-files input:checked').map(c=>c.value);const bt=$('#em-send');bt.disabled=true;bt.textContent='Sending…';
-try{await sheetPost({action:'email',to,subject,body,fileIds});
+try{await sheetPost(Object.assign({action:'email',to,subject,body,fileIds},TEAM&&SIG?{fromName:SIG.name+' · RLC Residences'}:{}));
 const l=getLead(job.id);if(l&&to!==l.email&&!l.email){const x=norm(l);x.email=to;x.updated=new Date().toISOString();saveLead(x);}
 logCh(job.id,'email',job.n||null);if(job.after)job.after();closeEmailEditor();toast((job.n?'Email '+job.n:'Email')+' sent to '+to+'.');}
 catch(e){bt.disabled=false;bt.textContent='Send';const msg=e&&e.message||'';err('em-err',/unknown action/.test(msg)?'Update your Google Sheet script to send emails directly.':'Not sent: '+(msg||'no connection')+'. Try again.');}}
@@ -920,8 +976,8 @@ tb.append(tr);if(openRow===l.id)tb.append(detailRow(l));});}
 
 $('#em-send').onclick=sendFromEditor;$('#em-cancel').onclick=closeEmailEditor;$('#em-modal').addEventListener('click',e=>{if(e.target.id==='em-modal')closeEmailEditor();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#em-modal').hidden)closeEmailEditor();});
 /* ---------- Accounts ---------- */
-const VIEWS=['v-in','v-up','v-wait','v-reset','v-admin'];
-function view(id){VIEWS.forEach(v=>{$('#'+v).hidden=v!==id;});['i-err','u-err','w-err','r-err','ad-err'].forEach(e=>{$('#'+e).hidden=true;});const f=$('#'+id+' input:not([type=file]):not([disabled])');if(f)setTimeout(()=>f.focus(),50);}
+const VIEWS=['v-in','v-up','v-wait','v-reset','v-admin','v-sent','v-treset'];
+function view(id){VIEWS.forEach(v=>{$('#'+v).hidden=v!==id;});['i-err','u-err','w-err','r-err','ad-err','tr-err'].forEach(e=>{$('#'+e).hidden=true;});const f=$('#'+id+' input:not([type=file]):not([disabled])');if(f)setTimeout(()=>f.focus(),50);}
 function err(id,m){const e=$('#'+id);e.textContent=m;e.hidden=!m;}
 const pause=()=>new Promise(r=>setTimeout(r,900));
 const okUser=u=>/^[a-z0-9._-]{2,30}$/.test(u);
@@ -930,7 +986,7 @@ function requestCode(rec){return encCode({t:'join',u:USER,e:rec.email,rid:rec.ri
 function showWait(){const rec=getUsers()[USER];const code=requestCode(rec);$('#w-mail').href=mailto(ADMIN_EMAIL,'RLC Tracker access request: '+USER,'Hi Lourjel,'+NL+NL+'Please approve my account for the RLC Client Follow-up Tracker.'+NL+NL+'Username: '+USER+NL+'Email: '+rec.email+NL+NL+'Request code:'+NL+code+NL);$('#w-code').value='';$('#gate').hidden=false;$('#app').hidden=true;view('v-wait');}
 async function openVault(){await loadData();await migrateOld();await startApp();}
 async function newAccountKey(p,raw){const ks=rnd(16);const pk=await dataKey(p,ks);const w=await aesEnc(pk,raw);return {ks:toB64(ks),wk:{iv:toB64(w.iv),ct:toB64(w.ct)}};}
-async function startApp(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}$('#gate').hidden=true;$('#app').hidden=false;$('#who-name').textContent=USER;$$('#gate input,#gate textarea').forEach(i=>{if(i.type!=='file')i.value='';});$('#admin-tab').hidden=!ADMIN;$('#admin-load').hidden=!!ADMIN;render();buildMsg();renderAdmin();setupNotify();fillSyncForm();if(SYNC)syncNow();const h=location.hash.slice(1);if(['today','clients','templates'].concat(ADMIN?['admin']:[]).includes(h))showTab(h);}
+async function startApp(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}$('#gate').hidden=true;$('#app').hidden=false;$('#who-name').textContent=TEAM?(TEAM.name||USER):USER;if(TEAM)$('#hdr-brand').textContent='RLC Residences · '+((SIG&&SIG.name)||TEAM.name);$$('#gate input,#gate textarea').forEach(i=>{if(i.type!=='file')i.value='';});$('#admin-tab').hidden=!(ADMIN||TEAM);$('#admin-tab').textContent=TEAM?'Settings':'Admin';$('#admin-load').hidden=!!(ADMIN||TEAM);$('#acct-open').hidden=!!TEAM;$$('.adm-only').forEach(e=>{e.hidden=!ADMIN||!!(e.querySelector('#a-req')||e.querySelector('#a-log'));});$$('.team-only').forEach(e=>{e.hidden=!TEAM;});render();buildMsg();renderAdmin();setupNotify();fillSyncForm();if(SYNC)syncNow();const h=location.hash.slice(1);if(['today','clients','templates'].concat(ADMIN||TEAM?['admin']:[]).includes(h))showTab(h);if(TEAM){renderTeamSide();if(!SYNC){showTab('admin');toast('Welcome! Connect your Google account to start.');}}if(ADMIN)renderTeam();}
 async function migrateOld(){const OLD='rlc_followup_leads_v1';const old=localStorage.getItem(OLD);if(!old||leads.length)return;let L;try{L=JSON.parse(old);}catch(e){return;}if(!Array.isArray(L))return;
 let odb=null;try{odb=await new Promise((ok,no)=>{const r=indexedDB.open('rlc_followup_files',1);r.onupgradeneeded=()=>{r.transaction.abort();};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}catch(e){}
 if(odb){for(const l of L.map(norm))for(const p of l.proofs.concat(l.files)){try{const rec=await new Promise((ok,no)=>{const q=odb.transaction('f').objectStore('f').get(p.id);q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error);});if(rec&&rec.blob)await putRaw(p.id,await rec.blob.arrayBuffer());}catch(e){}}odb.close();try{indexedDB.deleteDatabase('rlc_followup_files');}catch(e){}}
@@ -938,17 +994,7 @@ leads=L;persist();localStorage.removeItem(OLD);toast('Moved '+L.length+' clients
 
 $$('[data-go]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.go==='v-in'&&USER)location.reload();else view(b.dataset.go);}));
 
-$('#f-up').onsubmit=async e=>{e.preventDefault();try{const u=getVal('#u-user').trim().toLowerCase(),em=getVal('#u-email').trim(),p=getVal('#u-pass');
-if(!okUser(u))return err('u-err','Username: 2 to 30 letters or numbers, no spaces.');
-if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return err('u-err','Enter a valid email.');
-if(p.length<8)return err('u-err','Password must be at least 8 characters.');
-if(p!==getVal('#u-pass2'))return err('u-err','The passwords do not match.');
-if(getUsers()[u])return err('u-err','That username already exists on this device.');
-const raw=rnd(32);const esc=toB64(await crypto.subtle.encrypt({name:'RSA-OAEP'},await pubEnc(),raw));
-putUser(u,Object.assign({status:'pending',email:em,rid:toB64(rnd(9)),esc,created:new Date().toISOString()},await newAccountKey(p,raw)));
-USER=u;KEY=await importK(raw);showWait();}catch(x){err('u-err','Something went wrong. Use Chrome or Safari.');}};
-
-$('#f-in').onsubmit=async e=>{e.preventDefault();try{const u=getVal('#i-user').trim().toLowerCase(),p=getVal('#i-pass');const all=getUsers();const rec=all[u];if(!rec){await pause();const names=Object.keys(all);return err('i-err',names.length?'No account named "'+u+'" in this browser. Accounts here: '+names.join(', ')+'.':'No accounts in this browser yet. Use the same browser where you created your account, or tap Request an account.');}
+const localSignIn=async e=>{e.preventDefault();try{const u=getVal('#i-user').trim().toLowerCase(),p=getVal('#i-pass');const all=getUsers();const rec=all[u];if(!rec){await pause();const names=Object.keys(all);return err('i-err',names.length?'No account named "'+u+'" in this browser. Accounts here: '+names.join(', ')+'.':'No accounts in this browser yet. Use the same browser where you created your account, or tap Request an account.');}
 if(rec.v){/* account made in the earlier version: convert it */if(await verifier(p,fromB64(rec.vs))!==rec.v){await pause();return err('i-err','Wrong password. Check Caps Lock, or tap Forgot password.');}
 USER=u;KEY=await dataKey(p,fromB64(rec.ks));await loadData();const ids=[];leads.map(norm).forEach(l=>l.proofs.concat(l.files).forEach(f=>ids.push(f)));const bufs=[];for(const f of ids){const b=await getBlob(f.id,f.type);if(b)bufs.push([f.id,await b.arrayBuffer()]);}
 const raw=rnd(32);KEY=await importK(raw);for(const [id,buf] of bufs)await putRaw(id,buf);const esc=toB64(await crypto.subtle.encrypt({name:'RSA-OAEP'},await pubEnc(),raw));
@@ -1013,6 +1059,57 @@ $('#r-admin').onclick=()=>{const p=getVal('#r-pass');if(p.length<8)return err('r
 $('#r-adminfile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!resetU)return;const k=await loadAdminKey(f);if(!k)return;const u=resetU,rec=getUsers()[u];const p=getVal('#r-pass');
 try{const ek=await crypto.subtle.importKey('pkcs8',fromB64(k.enc),{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);const raw=new Uint8Array(await crypto.subtle.decrypt({name:'RSA-OAEP'},ek,fromB64(rec.esc)));Object.assign(rec,await newAccountKey(p,raw));delete rec.reset;putUser(u,rec);USER=u;KEY=await importK(raw);toast('Password changed.');if(rec.status!=='active')return showWait();await openVault();}catch(x){err('r-err','Could not reset this account with that key.');}};
 $('#r-copy').onclick=async()=>{try{await navigator.clipboard.writeText(resetCode(getUsers()[resetU],resetU));toast('Request copied.');}catch(e){}};
+
+
+/* ---------- Team accounts: sign-ins kept in Lourjel's sheet, clients in each teammate's own Google account ---------- */
+async function hub(body){const r=await fetch(DEFAULT_SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});return r.json();}
+const TEAM_SUBJECT='RLC Residences - Thank you for your interest!';
+function sigText(){const S=SIG||{};return [S.name||'',(S.role||'Property Specialist')+', RLC Residences',[S.phone,S.extra].filter(Boolean).join(' · ')].filter(Boolean).join(NL);}
+function sigFix(t){if(!TEAM||!SIG||typeof t!=='string')return t;const S=SIG;return t.split('LJ Quezada'+NL+'Executive Property Specialist, RLC Residences'+NL+'0921 624 1462 · facebook.com/RLCbyLJ').join(sigText()).split(window.MS_TPL_SUBJECT0).join(TEAM_SUBJECT).split('Executive Property Specialist').join(S.role||'Property Specialist').split('LJ Quezada').join(S.name||'your property specialist').split('RLC by Lourjel Quezada').join('RLC Residences');}
+window.MS_TPL_SUBJECT0=window.MS_TPL.SUBJECT;{const mk0=window.MS_TPL.make;window.MS_TPL.make=function(){return sigFix(mk0.apply(this,arguments));};}
+$('#f-in').onsubmit=async e=>{e.preventDefault();const u=getVal('#i-user').trim().toLowerCase(),p=getVal('#i-pass');const local=getUsers()[u];let j=null;
+const btn0=$('#f-in button[type=submit]');btn0.disabled=true;try{j=await hub({action:'tlogin',u,p});}catch(x){j=null;}finally{btn0.disabled=false;}
+if(j&&j.ok)return teamOpen(j,u,p);
+if(local)return localSignIn(e);
+if(!j)return err('i-err','Could not reach the sign-in server. Check the internet connection and try again.');
+await pause();err('i-err',j.error==='pending'?'Your account is waiting for Lourjel\'s approval. You\'ll get an email when it\'s approved.':j.error==='paused'?'Your account is paused. Ask Lourjel to turn it back on.':'Wrong username or password. Check Caps Lock, or tap Forgot password.');};
+async function teamOpen(j,u,p){try{TEAM={u,name:j.name||u,email:j.email||'',phone:j.phone||'',token:j.token,template:j.template||''};USER=u;KEY=await dataKey(p,te.encode('rlc-team|'+u));
+try{await loadData();}catch(x){localStorage.removeItem(dataKeyName());leads=[];SYNC=null;DELQ=[];SIG=null;}ADMIN=null;APPROVALS=[];
+if(j.config){try{const c=JSON.parse(j.config);const d=JSON.parse(td.decode(await aesDec(KEY,fromB64(c.iv),fromB64(c.ct))));SYNC=d.sync||null;if(d.sig)SIG=d.sig;}catch(x){}}
+if(!SIG)SIG={name:TEAM.name,role:'Property Specialist',phone:TEAM.phone,extra:''};
+window.MS_TPL.SUBJECT=TEAM_SUBJECT;persist(true);await startApp();}catch(x){$('#gate').hidden=false;view('v-in');err('i-err','Something went wrong. Use Chrome or Safari.');}}
+async function saveTeamConfig(){if(!TEAM)return;try{const {iv,ct}=await aesEnc(KEY,te.encode(JSON.stringify({sync:SYNC,sig:SIG})));const j=await hub({action:'tconfig',u:TEAM.u,token:TEAM.token,config:JSON.stringify({iv:toB64(iv),ct:toB64(ct)})});if(j.error==='login')toast('Your sign-in expired. Sign out and sign in again so other devices get this setting.',true);}catch(x){}}
+function renderTeamSide(){if(!TEAM)return;const tpl=TEAM.template||'';const a=$('#tm-copy');a.href=tpl?tpl.replace(/\/(edit|view|copy)[^]*$/,'').replace(/\/$/,'')+'/copy':'#';a.onclick=e=>{if(!tpl){e.preventDefault();toast('Lourjel has not shared the template link yet. Ask her for it.',true);}};
+$('#tm-setup').hidden=!!SYNC;const S=SIG||{};setVal('#sg-name',S.name||'');setVal('#sg-role',S.role||'');setVal('#sg-phone',S.phone||'');setVal('#sg-extra',S.extra||'');
+const id=SYNC&&(SYNC.url.match(/\/macros\/s\/([A-Za-z0-9_-]+)\//)||[])[1];$('#tm-form').hidden=true;$('#tm-form-note').textContent=SYNC?'Getting your form link…':'Connect your Google Sheet first.';
+if(SYNC)sheetPost({action:'formkey'}).then(r=>{const base=location.href.split(/[?#]/)[0].replace(/index\.html$/,'').replace(/[^/]*$/,'');const url=base+'form.html?s='+encodeURIComponent(id||'')+'&k='+encodeURIComponent(r.formKey)+'&n='+encodeURIComponent((SIG&&SIG.name)||TEAM.name);
+$('#tm-form-url').value=url;$('#tm-form-open').href=url;$('#tm-qr').src='https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=0&data='+encodeURIComponent(url);$('#tm-form').hidden=false;$('#tm-form-note').textContent='Give this link or QR code to your clients. Their details go straight to your own Google Sheet and your client list.';}).catch(e=>{$('#tm-form-note').textContent=/unknown action/.test(e&&e.message||'')?'Your sheet\'s script is out of date. Copy the latest template script into it.':'Could not get your form link. Check your Google Sheet connection.';});}
+$('#tm-form-copy').onclick=async()=>{if(await copyStr($('#tm-form-url').value))toast('Form link copied.');};
+$('#sg-save').onclick=()=>{SIG={name:getVal('#sg-name').trim()||TEAM.name,role:getVal('#sg-role').trim()||'Property Specialist',phone:getVal('#sg-phone').trim(),extra:getVal('#sg-extra').trim()};persist(true);saveTeamConfig();renderTeamSide();buildMsg();toast('Signature saved.');};
+$('#f-up').onsubmit=async e=>{e.preventDefault();const u=getVal('#u-user').trim().toLowerCase(),em=getVal('#u-email').trim(),p=getVal('#u-pass'),name=getVal('#u-name').trim(),phone=getVal('#u-phone').trim();
+if(!name)return err('u-err','Enter your full name.');if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return err('u-err','Enter a valid email.');
+if(!/^[a-z0-9._-]{2,30}$/.test(u))return err('u-err','Username: 2 to 30 letters or numbers, no spaces.');if(p.length<8)return err('u-err','Password must be at least 8 characters.');if(p!==getVal('#u-pass2'))return err('u-err','The passwords do not match.');
+const b=$('#u-go');b.disabled=true;try{const j=await hub({action:'tsignup',u,p,name,email:em,phone});if(j.error)return err('u-err',j.error==='taken'?'That username is taken. Choose another.':'Check your details and try again.');err('u-err','');view('v-sent');}catch(x){err('u-err','Could not reach the server. Check the internet connection.');}finally{b.disabled=false;}};
+let trStep=1;$('#f-treset').onsubmit=async e=>{e.preventDefault();const u=getVal('#tr-user').trim().toLowerCase();if(!u)return err('tr-err','Enter your username.');const b=$('#tr-go');b.disabled=true;
+try{if(trStep===1){await hub({action:'tresetreq',u});trStep=2;$('#tr-user').disabled=true;$('#tr-step2').hidden=false;b.textContent='Change password';err('tr-err','');return;}
+const p=getVal('#tr-pass');if(p.length<8)return err('tr-err','New password must be at least 8 characters.');if(p!==getVal('#tr-pass2'))return err('tr-err','The passwords do not match.');
+const j=await hub({action:'treset',u,code:getVal('#tr-code').trim(),p});if(j.error)return err('tr-err',j.error==='code'?'That code is wrong or expired. Check the latest email, or start again.':'Check the details and try again.');
+const k=await hub({action:'tlogin',u,p});if(k.ok){toast('Password changed. Reconnect your Google Sheet once on this new password.');return teamOpen(k,u,p);}view('v-in');toast('Password changed. Sign in.');}
+catch(x){err('tr-err','Could not reach the server. Check the internet connection.');}finally{b.disabled=false;}};
+/* Lourjel's Team card */
+async function renderTeam(){if(!ADMIN)return;const tb=$('#tm-rows');const st=$('#tm-status');if(!SYNC){tb.replaceChildren();st.textContent='Connect your Google Sheet below to manage your team.';return;}
+let j;try{j=await sheetPost({action:'tlist'});}catch(e){st.textContent=/unknown action|denied/.test(e&&e.message||'')?'Update your Google Sheet script to the latest version to manage your team.':'Could not load your team.';return;}
+st.textContent='';if(document.activeElement!==$('#tm-tpl'))setVal('#tm-tpl',j.template||'');tb.replaceChildren();const T=j.team||[];
+if(!T.length){const tr=mk('tr'),td=mk('td','note','No requests yet. Teammates tap Request an account on the sign-in page.');td.colSpan=6;tr.append(td);tb.append(tr);return;}
+const ord={Pending:0,Active:1,Paused:2};T.sort((a,b)=>(ord[a.status]??3)-(ord[b.status]??3)||a.name.localeCompare(b.name)).forEach(m=>{const tr=mk('tr');const when=x=>x?new Date(x).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'—';
+tr.append(mk('td',null,m.name||'—'),mk('td',null,m.u),mk('td',null,[m.email,m.phone].filter(Boolean).join(' · ')||'—'));const sc=mk('td');sc.append(mk('span','tag '+(m.status==='Active'?'ok':m.status==='Pending'?'warn':''),m.status==='Pending'?'Waiting for you':m.status));if(m.status==='Active')sc.append(mk('div','note',m.connected?'Google connected':'Not connected yet'));tr.append(sc,mk('td',null,when(m.active)));
+const td=mk('td');const act=(lab,op,cls,ask)=>btn(lab,async()=>{if(ask&&!confirm(ask))return;let pw;if(op==='password'){pw=prompt('New temporary password for '+m.u+' (8 or more characters). Tell them to change it with Forgot password later.');if(!pw)return;if(pw.length<8)return toast('Use 8 or more characters.',true);}
+try{await sheetPost({action:'tset',u:m.u,op,p:pw});toast({approve:'Approved. '+m.name+' got an email.',pause:'Paused. '+m.u+' can no longer sign in.',enable:'Turned back on.',remove:'Removed.',password:'Password changed. Send it to '+m.u+' privately.'}[op]);renderTeam();}catch(e){toast('Could not update. Try again.',true);}},cls||'link');
+if(m.status==='Pending')td.append(act('Approve','approve','btn'),' ',act('Decline','remove','link bad','Decline and remove the request from '+m.u+'?'));
+else{td.append(m.status==='Active'?act('Pause','pause','link','Pause '+m.u+'? They can\'t sign in until you turn them back on. Their clients stay in their own Google account.'):act('Turn on','enable'),' ',act('Set password','password'),' ',act('Remove','remove','link bad','Remove '+m.u+' from the team? They can\'t sign in anymore. Their clients stay in their own Google account.'));}
+tr.append(td);tb.append(tr);});}
+$('#tm-refresh').onclick=()=>renderTeam();
+$('#tm-tpl-save').onclick=async()=>{const url=getVal('#tm-tpl').trim();if(url&&!/^https:\/\/docs\.google\.com\/spreadsheets\/d\//.test(url))return toast('Paste the link of the template Google Sheet.',true);try{await sheetPost({action:'ttemplate',url});toast('Template link saved. Teammates see it when they sign in.');}catch(e){toast('Could not save. Update your Google Sheet script first.',true);}};
 
 /* admin */
 let adminReq=null;

@@ -36,10 +36,10 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-o
 </head>
 <body>
 <div class="wrap"><div class="card">
-<p class="eyebrow">RLC by Lourjel Quezada</p>
+<p class="eyebrow" id="brand">RLC by Lourjel Quezada</p>
 <div id="v-form">
 <h1>New lead</h1>
-<p class="sub">Executive Property Specialist · RLC Residences</p>
+<p class="sub" id="who">Executive Property Specialist · RLC Residences</p>
 <form id="f" novalidate>
 <label>Full name <span class="req">*</span><input id="name" autocomplete="name" required></label>
 <label>Mobile number<input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="09xx xxx xxxx"></label>
@@ -62,7 +62,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-o
 <label>Notes<textarea id="notes" rows="3" placeholder="Budget, unit type, best time to call…"></textarea></label>
 <p class="err" id="err" hidden></p>
 <button class="btn" id="go" type="submit">Submit</button>
-<p class="fine">By submitting, you agree to be contacted by LJ Quezada of RLC Residences about properties you are interested in.</p>
+<p class="fine" id="consent">By submitting, you agree to be contacted by LJ Quezada of RLC Residences about properties you are interested in.</p>
 </form>
 </div>
 <div id="v-done" class="done" hidden>
@@ -76,7 +76,11 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-o
 /* Set after the Apps Script web app is deployed. */
 const SHEET_URL='https://script.google.com/macros/s/AKfycbyaO09giCcTY8Y9WIcrWIQ6Bi0qa2wphtVf2ul0-O57qOKlec_v7w_MS22mlPSWhPyT/exec';
 const FORM_KEY='RLCF-3JUBR84CMH';
+/* A teammate's own form: form.html?s=<their web app id>&k=<their form key>&n=<their name> */
+const QS=new URLSearchParams(location.search);const AG=/^[A-Za-z0-9_-]{20,120}$/.test(QS.get('s')||'')&&QS.get('k')?{url:'https://script.google.com/macros/s/'+QS.get('s')+'/exec',key:QS.get('k'),name:(QS.get('n')||'').slice(0,60)}:null;
+const URL_=AG?AG.url:SHEET_URL,KEY_=AG?AG.key:FORM_KEY,FIRST=AG?(AG.name.split(' ')[0]||'We'):'LJ';
 const $=s=>document.querySelector(s);
+if(AG){$('#brand').textContent='RLC Residences';$('#who').textContent=(AG.name?AG.name+' · ':'')+'RLC Residences';$('#consent').textContent='By submitting, you agree to be contacted by '+(AG.name||'an RLC Residences property specialist')+' of RLC Residences about properties you are interested in.';$('#done-msg').textContent='Your details were received. '+FIRST+' will contact you soon.';}
 const val=s=>String($(s).value||'').trim();
 function err(m){const e=$('#err');e.textContent=m||'';e.hidden=!m;}
 $('#project').onchange=()=>{$('#other-row').hidden=$('#project').value!=='other';};
@@ -87,11 +91,11 @@ if(!phone&&!email){$('#phone').focus();return err('Please enter a mobile number 
 if(phone&&phone.replace(/[^0-9]/g,'').length<10)return err('Please check the mobile number.');
 if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return err('Please check the email.');
 const sel=$('#project').value;const project=sel==='other'?val('#other'):sel.split(' · ')[0];
-if(!/^https:\/\//.test(SHEET_URL))return err('This form is not connected to the Google Sheet yet.');
+if(!/^https:\/\//.test(URL_))return err('This form is not connected to the Google Sheet yet.');
 const b=$('#go');b.disabled=true;b.textContent='Sending…';
-try{const r=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'add',key:FORM_KEY,name,phone,email,project,notes:val('#notes'),source:new URLSearchParams(location.search).get('source')||'Lead form'})});
+try{const r=await fetch(URL_,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'add',key:KEY_,name,phone,email,project,notes:val('#notes'),source:new URLSearchParams(location.search).get('source')||'Lead form'})});
 const j=await r.json();if(!j.ok)throw new Error(j.error||'failed');
-$('#v-form').hidden=true;$('#v-done').hidden=false;$('#done-msg').textContent='Thank you, '+name.split(' ')[0]+'! Your details were received. LJ will contact you soon.';}
+$('#v-form').hidden=true;$('#v-done').hidden=false;$('#done-msg').textContent='Thank you, '+name.split(' ')[0]+'! Your details were received. '+FIRST+' will contact you soon.';}
 catch(x){err('Could not send. Please check the internet connection and try again.');}
 finally{b.disabled=false;b.textContent='Submit';}};
 $('#again').onclick=()=>{$('#f').reset();$('#other-row').hidden=true;$('#v-done').hidden=true;$('#v-form').hidden=false;$('#name').focus();};
