@@ -133,6 +133,7 @@ select.sel{width:auto}
 .cbtn.rep{border-color:var(--ok);color:var(--ok)}
 .cbtn.off{opacity:.35}
 .swl-wrap{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}.swl{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted)}.swatch{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}.swatch.on{outline:3px solid var(--ink);outline-offset:2px}
+.update-bar{position:fixed;left:0;right:0;top:0;z-index:50;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 16px;background:var(--gold);color:#121633;font-weight:600;font-size:14px}.update-bar .btn{background:#121633;color:#fff;padding:6px 14px}
 .tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;background:var(--line);color:var(--ink)}.tag.ok{background:var(--ok);color:#fff}.tag.warn{background:var(--warn);color:#fff}
 .steps{margin:8px 0 10px;padding-left:20px;font-size:13px;line-height:1.55}.steps li{margin-bottom:6px}
 .chw{display:flex;flex-direction:column;align-items:center;gap:2px}.chu{font-size:10px;color:var(--muted);white-space:nowrap}.chu.rep{color:var(--ok)}
@@ -586,6 +587,9 @@ function aesDec(key,iv,ct){return crypto.subtle.decrypt({name:'AES-GCM',iv},key,
 const pubSign=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_SIGN),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
 const pubEnc=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_ENC),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
 async function verifySig(msg,sig){try{return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await pubSign(),fromB64(sig),te.encode(msg));}catch(e){return false;}}
+const BUILD='20261123171048';
+(function(){let shown=false;async function check(){if(shown||!/^https?:/.test(location.protocol)||BUILD.indexOf('__')===0)return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){shown=true;const d=document.createElement('div');d.className='update-bar';d.innerHTML='A new version of the tracker is ready. ';const b=document.createElement('button');b.className='btn';b.type='button';b.textContent='Update now';b.onclick=()=>location.reload();d.append(b);document.body.append(d);}}catch(e){}}
+setTimeout(check,3000);setInterval(check,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});})();
 const THEMES={navy:['RLC Navy','#212988','#0b1a3d','#daa900','#8a6a00','#142a5c','#2b3f7a','#8c9bff'],emerald:['Emerald','#0f5c45','#072a20','#d4a72c','#7a5e0c','#0f3d30','#1f5a48','#6fd3a8'],maroon:['Maroon','#7a1c2e','#2a0a10','#e0b04a','#86600a','#4a1420','#6b2a38','#ff9aab'],teal:['Teal','#0e6474','#06262d','#f2a541','#8f5300','#0d3d46','#1d5a66','#6fd6e6'],purple:['Purple','#4b2a86','#1a0f33','#e8b923','#7f640a','#2c1b52','#45306f','#b79cff'],charcoal:['Charcoal','#2b2f36','#121417','#c9a227','#76600f','#23272d','#3a3f47','#b8c0cc'],rose:['Rose','#a23b62','#2e0f1c','#f0c05a','#835600','#4d1a30','#6e2c47','#ff9cc2'],ocean:['Ocean','#1f5fa8','#0a2142','#f5b82e','#865f00','#123a6b','#24508a','#8ec5ff']};
 let THEME='navy';
 function applyTheme(k){if(!THEMES[k])k='navy';THEME=k;const [,b,m,g,gt,pn,ln,bar]=THEMES[k];let el=document.getElementById('theme-css');if(!el){el=document.createElement('style');el.id='theme-css';document.head.append(el);}
