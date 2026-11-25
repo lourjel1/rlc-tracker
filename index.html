@@ -127,11 +127,15 @@ select.sel{width:auto}
 .c-email{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nowrap{white-space:nowrap}
 .acts-row{display:flex;gap:4px;flex-wrap:nowrap}
-.cbtn,.esw{display:inline-block;white-space:nowrap;text-decoration:none;font:inherit;font-size:11px;font-weight:600;padding:4px 7px;border:1px solid var(--line);border-radius:var(--r);background:transparent;color:var(--ink);cursor:pointer;line-height:1.3}
-.cbtn.need,.esw.need{border-color:var(--bad);color:var(--bad)}
-.cbtn.done,.esw.done{border-color:var(--ok);background:var(--ok);color:#fff}
-.cbtn.rep{border-color:var(--ok);color:var(--ok)}
-.cbtn.off{opacity:.35}
+.acts-row{gap:8px}
+.cbtn,.esw{position:relative;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:0;border-radius:10px;background:var(--c,#667);color:#fff;cursor:pointer;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.18);transition:transform .12s,filter .12s}
+.cbtn:hover,.esw:hover{transform:translateY(-1px);filter:brightness(1.08)}.cbtn:focus-visible,.esw:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.ch-viber{--c:#7360f2}.ch-whatsapp{--c:#1fa855}.ch-sms{--c:#e8930c}.ch-call{--c:#0b8fd1}.ch-facebook{--c:#1877f2}.ch-email{--c:#d93b30}
+.cbtn.off{background:var(--line);color:var(--muted);box-shadow:none}
+.esw .num{position:absolute;right:-5px;bottom:-5px;min-width:17px;height:17px;padding:0 3px;border-radius:9px;background:var(--panel);color:var(--ink);border:1px solid var(--line);font:700 10px/15px system-ui,sans-serif;text-align:center}
+.tick{position:absolute;right:-5px;top:-5px;width:17px;height:17px;border-radius:50%;background:var(--ok);color:#fff;border:2px solid var(--panel);font:700 10px/13px system-ui,sans-serif;text-align:center}
+.esw.need{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--bad)}
+.chu.due{color:var(--bad);font-weight:600}
 .swl-wrap{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}.swl{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted)}.swatch{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}.swatch.on{outline:3px solid var(--ink);outline-offset:2px}
 .update-bar{position:fixed;left:0;right:0;top:0;z-index:50;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 16px;background:var(--gold);color:#121633;font-weight:600;font-size:14px}.update-bar .btn{background:#121633;color:#fff;padding:6px 14px}
 .tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;background:var(--line);color:var(--ink)}.tag.ok{background:var(--ok);color:#fff}.tag.warn{background:var(--warn);color:#fff}
@@ -584,7 +588,7 @@ function aesDec(key,iv,ct){return crypto.subtle.decrypt({name:'AES-GCM',iv},key,
 const pubSign=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_SIGN),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
 const pubEnc=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_ENC),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
 async function verifySig(msg,sig){try{return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await pubSign(),fromB64(sig),te.encode(msg));}catch(e){return false;}}
-const BUILD='20261125140526';
+const BUILD='20261125141120';
 (function(){let shown=false;async function check(){if(shown||!/^https?:/.test(location.protocol)||BUILD.indexOf('__')===0)return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){shown=true;const d=document.createElement('div');d.className='update-bar';d.innerHTML='A new version of the tracker is ready. ';const b=document.createElement('button');b.className='btn';b.type='button';b.textContent='Update now';b.onclick=()=>location.reload();d.append(b);document.body.append(d);}}catch(e){}}
 setTimeout(check,3000);setInterval(check,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});})();
 const THEMES={navy:['RLC Navy','#212988','#0b1a3d','#daa900','#8a6a00','#142a5c','#2b3f7a','#8c9bff'],emerald:['Emerald','#0f5c45','#072a20','#d4a72c','#7a5e0c','#0f3d30','#1f5a48','#6fd3a8'],maroon:['Maroon','#7a1c2e','#2a0a10','#e0b04a','#86600a','#4a1420','#6b2a38','#ff9aab'],teal:['Teal','#0e6474','#06262d','#f2a541','#8f5300','#0d3d46','#1d5a66','#6fd6e6'],purple:['Purple','#4b2a86','#1a0f33','#e8b923','#7f640a','#2c1b52','#45306f','#b79cff'],charcoal:['Charcoal','#2b2f36','#121417','#c9a227','#76600f','#23272d','#3a3f47','#b8c0cc'],rose:['Rose','#a23b62','#2e0f1c','#f0c05a','#835600','#4d1a30','#6e2c47','#ff9cc2'],ocean:['Ocean','#1f5fa8','#0a2142','#f5b82e','#865f00','#123a6b','#24508a','#8ec5ff']};
@@ -954,12 +958,19 @@ let openRow=null;const OPENCAT=new Set();
 const PLAN_KEYS=['viber','whatsapp','sms','call'];
 function chUse(l,k){const L=l.log.filter(e=>e.ch===k&&e.s!=='none');const last=L.length?L[L.length-1].at:'';return {n:L.length,last,today:!!last&&localDate(last)===today()};}
 function ago(iso){const d=days(today(),localDate(iso));return d<=0?'today':d===1?'yesterday':d+'d ago';}
+const ICO=(()=>{const sv=b=>'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+b+'</svg>';
+const rect='<path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>',round='<path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.4A8.5 8.5 0 1 1 21 11.5z"/>';
+return {viber:sv(rect+'<path d="M8 9h8M8 12.5h5"/>'),whatsapp:sv(round+'<path d="M9 9.5c0 3 2.5 5.5 5.5 5.5"/>'),sms:sv(rect+'<circle cx="8.5" cy="10.5" r=".6" fill="currentColor"/><circle cx="12" cy="10.5" r=".6" fill="currentColor"/><circle cx="15.5" cy="10.5" r=".6" fill="currentColor"/>'),
+call:sv('<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.9.7 2.8a2 2 0 0 1-.4 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.8.7a2 2 0 0 1 1.7 2z"/>'),
+facebook:sv(round+'<path d="M8 10h8M8 13.5h5"/>'),email:sv('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>')};})();
+const CHN={viber:'Viber',whatsapp:'WhatsApp',sms:'SMS',call:'Call',facebook:'Facebook',email:'Email'};
+function setIcon(el,k,extra){el.innerHTML=ICO[k]+(extra||'');}
 function cbtn(l,P,left,k,label){const u=chUse(l,k);const done=u.today;const rep=chState(l,k)==='replied';
-const h=chanHref(l,k);const a=mk('a','cbtn'+(done?' done':''),(done?'✓ ':'')+label);a.title=label+': '+(u.n?'used '+u.n+'× · last '+ago(u.last)+' '+new Date(u.last).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'not used yet')+(rep?' · replied':'');
-if(!h){a.className+=' off';a.href='#';a.onclick=e=>{e.preventDefault();toast(k==='facebook'?(l.fb?'That Facebook link cannot be opened. Check it (tap the name).':'Add their Facebook link first (tap the name).'):l.phone?'This number cannot be used.':'Add a mobile number first (tap the name).',true);};const w0=mk('div','chw');w0.append(a,mk('div','chu','—'));return w0;}
+const h=chanHref(l,k);const a=mk('a','cbtn ch-'+k+(done?' done':''));setIcon(a,k,done?'<span class="tick">✓</span>':'');a.setAttribute('aria-label',label);a.title=label+': '+(u.n?'used '+u.n+'× · last '+ago(u.last)+' '+new Date(u.last).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'not used yet')+(rep?' · replied':'');
+if(!h){a.className+=' off';a.href='#';a.onclick=e=>{e.preventDefault();toast(k==='facebook'?(l.fb?'That Facebook link cannot be opened. Check it (tap the name).':'Add their Facebook link first (tap the name).'):l.phone?'This number cannot be used.':'Add a mobile number first (tap the name).',true);};const w0=mk('div','chw');w0.append(a,mk('div','chu',label));return w0;}
 a.href=h;if(h.startsWith('https:')){a.target='_blank';a.rel='noopener';}
-a.onclick=()=>{a.href=chanHref(norm(getLead(l.id)),k);if(k!=='call')copyStr(quickMsg(l,k));if(k==='facebook')toast('Message copied. In Messenger, paste it and tap Send.');setTimeout(()=>logCh(l.id,k),400);};const w=mk('div','chw');w.append(a,mk('div','chu'+(rep?' rep':''),u.n?(rep?'replied · ':'')+u.n+'× · '+ago(u.last):'—'));return w;}
-function eswitch(l,P,left,n){const sent=l.emailSeq[n];const need=left.some(i=>i.k==='email')&&P&&P.day===n;const viaFb=!l.email&&!!fbUrl(l);const b=mk('button','esw'+(sent?' done':need?' need':''),(sent?'✓ ':'')+(viaFb?'FB':'E')+n);b.type='button';b.title=sent?'Follow-up '+n+' sent '+fd(localDate(sent.at))+(sent.via==='facebook'?' on Facebook':''):(viaFb?'Send follow-up '+n+' on Facebook (no email)':'Send Email '+n)+(need?' (due today)':'');b.onclick=()=>sendSeqEmail(l.id,n);const w=mk('div','chw');w.append(b,mk('div','chu',sent?ago(sent.at):need?'due today':'—'));return w;}
+a.onclick=()=>{a.href=chanHref(norm(getLead(l.id)),k);if(k!=='call')copyStr(quickMsg(l,k));if(k==='facebook')toast('Message copied. In Messenger, paste it and tap Send.');setTimeout(()=>logCh(l.id,k),400);};const w=mk('div','chw');w.append(a,mk('div','chu',label),mk('div','chu'+(rep?' rep':''),u.n?(rep?'replied · ':'')+u.n+'× · '+ago(u.last):'—'));return w;}
+function eswitch(l,P,left,n){const sent=l.emailSeq[n];const need=left.some(i=>i.k==='email')&&P&&P.day===n;const viaFb=!l.email&&!!fbUrl(l);const b=mk('button','esw ch-'+(viaFb?'facebook':'email')+(sent?' done':need?' need':''));setIcon(b,viaFb?'facebook':'email','<span class="num">'+n+'</span>'+(sent?'<span class="tick">✓</span>':''));b.setAttribute('aria-label',(viaFb?'Facebook follow-up ':'Email ')+n);b.type='button';b.title=sent?'Follow-up '+n+' sent '+fd(localDate(sent.at))+(sent.via==='facebook'?' on Facebook':''):(viaFb?'Send follow-up '+n+' on Facebook (no email)':'Send Email '+n)+(need?' (due today)':'');b.onclick=()=>sendSeqEmail(l.id,n);const w=mk('div','chw');w.append(b,mk('div','chu',(viaFb?'FB ':'Email ')+n),mk('div','chu'+(need&&!sent?' due':''),sent?ago(sent.at):need?'due today':'—'));return w;}
 function statusInfo(l,a,P){const left=P?P.items.filter(i=>!i.done):[];if(a.closed)return {cls:'st-mid',txt:l.status,left};
 if(left.length)return {cls:'st-bad',txt:'Follow up: '+left.map(i=>i.n).join(', '),left};
 if(a.over>0)return {cls:'st-bad',txt:'Follow up: '+a.over+' day'+(a.over>1?'s':'')+' overdue',left};
