@@ -117,9 +117,9 @@ select.sel{width:auto}
 .modal-card{width:100%;max-width:680px;background:var(--bg);border-top:3px solid var(--gold);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 12px 32px rgba(0,0,0,.35)}
 .modal-card h2{margin:0}.modal-card .out{min-height:320px}
 .tbl-wrap{border:1px solid var(--line);border-radius:var(--r);max-height:72vh;overflow:auto}
-.ctable{min-width:1280px;font-size:13px;border-collapse:separate;border-spacing:0}
+.ctable{min-width:980px;font-size:13px;border-collapse:separate;border-spacing:0}
 .ctable thead th{position:sticky;top:0;z-index:2;background:var(--panel);padding:8px 10px}
-.ctable td{padding:12px 12px;vertical-align:middle;border-bottom:1px solid var(--line)}
+.ctable td{padding:10px 12px;vertical-align:middle;border-bottom:1px solid var(--line)}
 .ctable tbody tr:not(.row-due):not(.detail):hover td{background:color-mix(in srgb,var(--bg) 94%,var(--ink))}
 .ctable thead th{font-size:11px;letter-spacing:.08em;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line)}
 .ctable th:first-child,.ctable td.c-name{position:sticky;left:0;z-index:1;background:var(--bg);min-width:150px;max-width:200px}
@@ -130,13 +130,14 @@ select.sel{width:auto}
 .ctable .sub{font-size:11px;color:var(--muted)}
 .c-email{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nowrap{white-space:nowrap}
-.acts-row{display:grid;grid-auto-flow:column;grid-auto-columns:64px;gap:4px;align-items:start;justify-content:start}
-.cbtn,.esw{position:relative;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:0;border-radius:10px;background:var(--c,#667);color:#fff;cursor:pointer;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.18);transition:transform .12s,filter .12s}
+.acts-row{display:grid;grid-auto-flow:column;grid-auto-columns:50px;gap:2px;align-items:start;justify-content:start}
+.cbtn,.esw{position:relative;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:8px;background:var(--c,#667);color:#fff;cursor:pointer;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.18);transition:transform .12s,filter .12s}
 .cbtn:hover,.esw:hover{transform:translateY(-1px);filter:brightness(1.08)}.cbtn:focus-visible,.esw:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .ch-viber{--c:#7360f2}.ch-whatsapp{--c:#1fa855}.ch-sms{--c:#e8930c}.ch-call{--c:#0b8fd1}.ch-facebook{--c:#1877f2}.ch-email{--c:#d93b30}
-.cbtn.off{background:var(--line);color:var(--muted);box-shadow:none}
-.esw .num{position:absolute;right:-5px;bottom:-5px;min-width:17px;height:17px;padding:0 3px;border-radius:9px;background:var(--panel);color:var(--ink);border:1px solid var(--line);font:700 10px/15px system-ui,sans-serif;text-align:center}
-.tick{position:absolute;right:-5px;top:-5px;width:17px;height:17px;border-radius:50%;background:var(--ok);color:#fff;border:2px solid var(--panel);font:700 10px/13px system-ui,sans-serif;text-align:center}
+.cbtn.off,.esw.off{background:var(--line);color:var(--muted);box-shadow:none;opacity:.45;filter:grayscale(1)}.cbtn.off:hover,.esw.off:hover{transform:none;filter:grayscale(1)}
+.cbtn svg,.esw svg{width:15px;height:15px}
+.esw .num{position:absolute;right:-5px;bottom:-5px;min-width:14px;height:14px;padding:0 2px;border-radius:7px;background:var(--panel);color:var(--ink);border:1px solid var(--line);font:700 9px/12px system-ui,sans-serif;text-align:center}
+.tick{position:absolute;right:-5px;top:-5px;width:14px;height:14px;border-radius:50%;background:var(--ok);color:#fff;border:2px solid var(--panel);font:700 8px/10px system-ui,sans-serif;text-align:center}
 .esw.need{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--bad)}
 .chu.due{color:var(--bad);font-weight:600}
 .swl-wrap{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}.swl{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted)}.swatch{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}.swatch.on{outline:3px solid var(--ink);outline-offset:2px}
@@ -150,7 +151,7 @@ select.sel{width:auto}
 .tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;background:var(--line);color:var(--ink)}.tag.ok{background:var(--ok);color:#fff}.tag.warn{background:var(--warn);color:#fff}
 .steps{margin:8px 0 10px;padding-left:20px;font-size:13px;line-height:1.55}.steps li{margin-bottom:6px}
 .via{display:inline-block;margin:3px 0 1px;padding:1px 8px;border-radius:99px;font-size:10.5px;font-weight:600;background:var(--line);color:var(--ink);white-space:nowrap}.via.none{background:var(--bad);color:#fff}
-.chw{display:flex;flex-direction:column;align-items:center;gap:3px;width:64px;min-width:0}.chw .cbtn,.chw .esw{margin-bottom:2px}.chu{font-size:10.5px;line-height:1.2;color:var(--ink);opacity:.85;white-space:nowrap;max-width:64px;overflow:hidden;text-overflow:ellipsis;text-align:center}.chu.cu{font-size:10px;color:var(--muted);opacity:1;font-variant-numeric:tabular-nums}.chu.rep{color:var(--ok);font-weight:600}.chu.due{color:var(--bad);font-weight:700}
+.chw{display:flex;flex-direction:column;align-items:center;gap:2px;width:50px;min-width:0}.chw .cbtn,.chw .esw{margin-bottom:2px}.chu{font-size:9.5px;line-height:1.2;color:var(--ink);opacity:.85;white-space:nowrap;max-width:50px;overflow:hidden;text-overflow:ellipsis;text-align:center}.chu.cu{font-size:9px;color:var(--muted);opacity:1;font-variant-numeric:tabular-nums}.chu.rep{color:var(--ok);font-weight:600}.chu.due{color:var(--bad);font-weight:700}
 .c-note{width:170px;min-width:140px;font:inherit;font-size:12px;padding:4px 6px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink);resize:vertical}
 .mpick{display:inline-flex;gap:6px;align-items:center;cursor:pointer;padding:2px 8px;border:1px solid var(--line);border-radius:var(--r)}.sub2{padding-left:40px}.mfile{display:inline-flex;gap:6px;align-items:center;cursor:pointer}.mfile.on{color:var(--ok);font-weight:600}.pjrow{margin-top:10px;font-weight:600}.selbar{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--muted);margin-bottom:4px}.addproj{margin-top:12px;font:inherit;font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink)}
 .mpick.on{border-color:var(--ok);color:var(--ok);font-weight:600}
@@ -400,7 +401,7 @@ label.btn2 input{display:none}
 </div>
 
 <div class="legend"><span id="client-count"></span><span><b class="st-bad">Red</b> = follow-up needed today</span><span><b class="ok">✓</b> = done today</span><span>Tap a name to edit</span></div>
-<div class="scroll tbl-wrap"><table class="ctable"><thead><tr><th>Name</th><th>Mobile</th><th>Email</th><th>Project</th><th>Message</th><th>Follow-ups</th><th>Files</th><th>Notes</th><th>Status</th><th></th></tr></thead><tbody id="client-rows"></tbody></table></div>
+<div class="scroll tbl-wrap"><table class="ctable"><thead><tr><th>Name</th><th>Project</th><th>Message</th><th>Follow-ups</th><th>Files</th><th>Notes</th><th>Status</th><th></th></tr></thead><tbody id="client-rows"></tbody></table></div>
 </section>
 
 <section class="sec" id="docs" hidden>
@@ -611,7 +612,7 @@ function aesDec(key,iv,ct){return crypto.subtle.decrypt({name:'AES-GCM',iv},key,
 const pubSign=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_SIGN),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
 const pubEnc=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_ENC),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
 async function verifySig(msg,sig){try{return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await pubSign(),fromB64(sig),te.encode(msg));}catch(e){return false;}}
-const BUILD='20261125143433';
+const BUILD='20261125144002';
 (function(){let shown=false;async function check(){if(shown||!/^https?:/.test(location.protocol)||BUILD.indexOf('__')===0)return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){shown=true;const d=document.createElement('div');d.className='update-bar';d.innerHTML='A new version of the tracker is ready. ';const b=document.createElement('button');b.className='btn';b.type='button';b.textContent='Update now';b.onclick=()=>location.reload();d.append(b);document.body.append(d);}}catch(e){}}
 setTimeout(check,3000);setInterval(check,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});})();
 const THEMES={navy:['RLC Navy','#212988','#0b1a3d','#daa900','#8a6a00','#142a5c','#2b3f7a','#8c9bff'],emerald:['Emerald','#0f5c45','#072a20','#d4a72c','#7a5e0c','#0f3d30','#1f5a48','#6fd3a8'],maroon:['Maroon','#7a1c2e','#2a0a10','#e0b04a','#86600a','#4a1420','#6b2a38','#ff9aab'],teal:['Teal','#0e6474','#06262d','#f2a541','#8f5300','#0d3d46','#1d5a66','#6fd6e6'],purple:['Purple','#4b2a86','#1a0f33','#e8b923','#7f640a','#2c1b52','#45306f','#b79cff'],charcoal:['Charcoal','#2b2f36','#121417','#c9a227','#76600f','#23272d','#3a3f47','#b8c0cc'],rose:['Rose','#a23b62','#2e0f1c','#f0c05a','#835600','#4d1a30','#6e2c47','#ff9cc2'],ocean:['Ocean','#1f5fa8','#0a2142','#f5b82e','#865f00','#123a6b','#24508a','#8ec5ff']};
@@ -934,7 +935,7 @@ function emailLinks(l){const SL=selLines(l,'• ');if(SL.length)return 'Photos a
 
 /* ---------- Message for a quick-send button ---------- */
 function quickMsg(l,k){const a=analyze(l);const lang=LMAP[l.lang]||'tg';const txt=window.MS_TPL.make(l,a.sit,lang,k==='sms'?'sms':'viber');const link=chatLink(l);return link?txt+NL+NL+(lang==='en'?'Photos and details:':'Photos at details:')+(link.includes(NL)||selMats(l).length?NL:' ')+link:txt;}
-function chanHref(l,k){if(k==='facebook')return fbChat(l);const num=intlNum(l.phone);if(k==='viber')return MOBILE?'viber://forward?text='+encodeURIComponent(quickMsg(l,k)):(num?'viber://chat?number=%2B'+num:'');if(!num)return '';if(k==='whatsapp')return 'https://wa.me/'+num+'?text='+encodeURIComponent(quickMsg(l,k));if(k==='sms')return 'sms:+'+num+'&body='+encodeURIComponent(quickMsg(l,k));if(k==='call')return 'tel:+'+num;return '';}
+function chanHref(l,k){if(k==='facebook')return fbChat(l);const num=intlNum(l.phone);if(k==='viber')return !num?'':MOBILE?'viber://forward?text='+encodeURIComponent(quickMsg(l,k)):(num?'viber://chat?number=%2B'+num:'');if(!num)return '';if(k==='whatsapp')return 'https://wa.me/'+num+'?text='+encodeURIComponent(quickMsg(l,k));if(k==='sms')return 'sms:+'+num+'&body='+encodeURIComponent(quickMsg(l,k));if(k==='call')return 'tel:+'+num;return '';}
 async function copyStr(t){try{await navigator.clipboard.writeText(t);return true;}catch(e){return false;}}
 
 /* ---------- Sending emails 1, 2, 3 ---------- */
@@ -1018,7 +1019,7 @@ const h=chanHref(l,k);const a=mk('a','cbtn ch-'+k+(done?' done':''));setIcon(a,k
 if(!h){a.className+=' off';a.href='#';a.onclick=e=>{e.preventDefault();toast(k==='facebook'?(l.fb?'That Facebook link cannot be opened. Check it (tap the name).':'Add their Facebook link first (tap the name).'):l.phone?'This number cannot be used.':'Add a mobile number first (tap the name).',true);};const w0=mk('div','chw');w0.append(a,mk('div','chu',label),mk('div','chu cu','—'));return w0;}
 a.href=h;if(h.startsWith('https:')){a.target='_blank';a.rel='noopener';}
 a.onclick=()=>{a.href=chanHref(norm(getLead(l.id)),k);if(k!=='call')copyStr(quickMsg(l,k));if(k==='facebook')toast('Message copied. In Messenger, paste it and tap Send.');setTimeout(()=>logCh(l.id,k),400);};const w=mk('div','chw');w.append(a,mk('div','chu',label),mk('div','chu cu'+(rep?' rep':''),u.n?(rep?'✓ ':'')+u.n+'× · '+agoS(u.last):'—'));if(rep)w.title=label+': client replied';return w;}
-function eswitch(l,P,left,n){const sent=l.emailSeq[n];const need=left.some(i=>i.k==='email')&&P&&P.day===n;const viaFb=!l.email&&!!fbUrl(l);const b=mk('button','esw ch-'+(viaFb?'facebook':'email')+(sent?' done':need?' need':''));setIcon(b,viaFb?'facebook':'email','<span class="num">'+n+'</span>'+(sent?'<span class="tick">✓</span>':''));b.setAttribute('aria-label',(viaFb?'Facebook follow-up ':'Email ')+n);b.type='button';b.title=sent?'Follow-up '+n+' sent '+fd(localDate(sent.at))+(sent.via==='facebook'?' on Facebook':''):(viaFb?'Send follow-up '+n+' on Facebook (no email)':'Send Email '+n)+(need?' (due today)':'');b.onclick=()=>sendSeqEmail(l.id,n);const w=mk('div','chw');w.append(b,mk('div','chu',(viaFb?'FB ':'Email ')+n),mk('div','chu cu'+(need&&!sent?' due':''),sent?agoS(sent.at):need?'due':'—'));return w;}
+function eswitch(l,P,left,n){const sent=l.emailSeq[n];const need=left.some(i=>i.k==='email')&&P&&P.day===n;const viaFb=!l.email&&!!fbUrl(l);const none=!l.email&&!viaFb;const b=mk('button','esw ch-'+(viaFb?'facebook':'email')+(none?' off':sent?' done':need?' need':''));setIcon(b,viaFb?'facebook':'email','<span class="num">'+n+'</span>'+(sent?'<span class="tick">✓</span>':''));b.setAttribute('aria-label',(viaFb?'Facebook follow-up ':'Email ')+n);b.type='button';b.title=sent?'Follow-up '+n+' sent '+fd(localDate(sent.at))+(sent.via==='facebook'?' on Facebook':''):(viaFb?'Send follow-up '+n+' on Facebook (no email)':'Send Email '+n)+(need?' (due today)':'');b.onclick=()=>none?toast('Add an email or a Facebook link first (tap the name).',true):sendSeqEmail(l.id,n);const w=mk('div','chw');w.append(b,mk('div','chu',(viaFb?'FB ':'Email ')+n),mk('div','chu cu'+(need&&!sent&&!none?' due':''),sent?agoS(sent.at):need&&!none?'due':'—'));return w;}
 function statusInfo(l,a,P){const left=P?P.items.filter(i=>!i.done):[];if(a.closed)return {cls:'st-mid',txt:l.status,left};
 if(left.length)return {cls:'st-bad',txt:'Follow up: '+left.map(i=>i.n).join(', '),left};
 if(a.over>0)return {cls:'st-bad',txt:'Follow up: '+a.over+' day'+(a.over>1?'s':'')+' overdue',left};
@@ -1026,7 +1027,7 @@ if(a.due)return {cls:'st-bad',txt:'Follow up today',left};
 if(!a.attempts&&!a.tried.length)return {cls:'st-bad',txt:'Not contacted yet',left};
 if(P)return {cls:'st-ok',txt:P.items[0].n+' sent',left};
 return {cls:'st-mid',txt:l.next?'Next: '+fd(l.next):'No follow-up set',left};}
-function detailRow(l){const tr=mk('tr','detail');const td=mk('td');td.colSpan=10;const g=mk('div','dgrid');
+function detailRow(l){const tr=mk('tr','detail');const td=mk('td');td.colSpan=8;const g=mk('div','dgrid');
 const c1=mk('div');c1.append(mk('h4',null,'Client files'));const fl=mk('div','flist');const C=l.cloud||[];
 if(!C.length)fl.append(mk('p','note',SYNC?'No files yet. Upload a computation or photos for this client.':'Connect your Google Sheet (Admin tab) to save files to Google Drive.'));
 C.forEach(f=>{const r=mk('div','frow');const a=mk('a','link',f.name);a.href=f.url;a.target='_blank';a.rel='noopener';r.append(a,btn('Copy link',async()=>{if(await copyStr(f.url))toast('Link copied.');}),btn('Remove',()=>removeCloud(l.id,f.id)));fl.append(r);});
@@ -1074,11 +1075,11 @@ if(msSt==='open')L=L.filter(x=>!x.a.closed);else if(msSt==='due')L=L.filter(x=>s
 const nx=x=>x.l.next||'9999';const rank=x=>statusInfo(x.l,x.a,plan(x.l)).cls==='st-bad'?0:1;
 if(msSort==='next')L.sort((a,b)=>nx(a)<nx(b)?-1:nx(a)>nx(b)?1:0);else if(msSort==='new')L.sort((a,b)=>(b.l.created||'')<(a.l.created||'')?-1:1);else if(msSort==='name')L.sort((a,b)=>(a.l.name||'').localeCompare(b.l.name||''));else L.sort((a,b)=>rank(a)-rank(b)||b.a.score-a.a.score||(nx(a)<nx(b)?-1:1));
 const cnt=$('#client-count');if(cnt)cnt.textContent=L.length+' of '+leads.length+' clients';
-if(!L.length){const tr=mk('tr');const td=mk('td','note',leads.length?'No clients match.':'No clients yet. Tap + Add client, or add them with the lead form or your Google Sheet.');td.colSpan=10;tr.append(td);tb.append(tr);return;}
+if(!L.length){const tr=mk('tr');const td=mk('td','note',leads.length?'No clients match.':'No clients yet. Tap + Add client, or add them with the lead form or your Google Sheet.');td.colSpan=8;tr.append(td);tb.append(tr);return;}
 L.forEach(({l,a})=>{const P=plan(l);const si=statusInfo(l,a,P);const tr=mk('tr',si.cls==='st-bad'?'row-due':'');tr.dataset.key=l.id;
 const c=(x,cls)=>{const td=mk('td',cls||null);if(x instanceof Node)td.append(x);else td.textContent=x==null||x===''?'—':x;tr.append(td);return td;};
 const nm=mk('div');const nb=btn(l.name||'(no name)',()=>openEditor(l.id),'name-btn');const via=[l.phone&&'Mobile',l.email&&'Email',fbUrl(l)&&'Facebook'].filter(Boolean);const vc=mk('div','via'+(via.length?'':' none'),via.length?(via.length===1?via[0]+' only':via.join(' + ')):'No contact info');vc.title='How you can reach this client';nm.append(nb,vc,mk('div','sub',l.lastContact?'Last contact: '+fd(l.lastContact):'Not contacted yet'));c(nm,'c-name');
-const ph=mk('div','nowrap',l.phone||'—');c(ph);c(l.email||'—','c-email');c(propOf(l)||'—');
+c(propOf(l)||'—');
 const ms=mk('div','acts-row');[['viber','Viber'],['whatsapp','WhatsApp'],['sms','SMS'],['call','Call'],['facebook','Facebook']].forEach(([k,n])=>ms.append(cbtn(l,P,si.left,k,n)));c(ms);
 const es=mk('div','acts-row');[1,2,3].forEach(n=>es.append(eswitch(l,P,si.left,n)));c(es);
 const fb=btn('📎 '+(l.cloud||[]).length+(openRow===l.id?' ▴':' ▾'),()=>{openRow=openRow===l.id?null:l.id;if(openRow&&SYNC&&!MATS)loadMats();renderClients();},'link nowrap');c(fb);
