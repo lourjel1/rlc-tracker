@@ -352,7 +352,7 @@ label.btn2 input{display:none}
 <label class="field">Full name *<input id="f-name" autocomplete="off"></label>
 <label class="field">Mobile number<input id="f-phone" inputmode="tel" placeholder="09xx xxx xxxx"></label>
 <label class="field">Email<input id="f-email" type="email"></label>
-<label class="field">Facebook link<input id="f-fb" placeholder="facebook.com/their.name" autocapitalize="none" spellcheck="false"></label>
+<label class="field">Facebook or Messenger link<input id="f-fb" placeholder="Their profile link or Messenger chat link" autocapitalize="none" spellcheck="false"></label>
 <label class="field">Where you met<select id="f-source"><option>Booth</option><option>Facebook page</option><option>Referral</option><option>Walk-in</option><option>Ads / website</option><option>Other</option></select></label>
 <label class="field">Reply in<select id="f-lang"><option>Taglish</option><option>Tagalog / Filipino</option><option>English</option></select></label>
 <label class="field">How they reply<select id="f-style"><option value="">Not sure yet</option><option>Quick replier</option><option>Slow replier</option><option>Short answers / busy</option><option>Asks a lot of details</option><option>Price-sensitive</option><option>Undecided / needs reassurance</option><option>Prefers calls</option></select></label>
@@ -584,7 +584,7 @@ function aesDec(key,iv,ct){return crypto.subtle.decrypt({name:'AES-GCM',iv},key,
 const pubSign=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_SIGN),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
 const pubEnc=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_ENC),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
 async function verifySig(msg,sig){try{return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await pubSign(),fromB64(sig),te.encode(msg));}catch(e){return false;}}
-const BUILD='20261125134943';
+const BUILD='20261125140526';
 (function(){let shown=false;async function check(){if(shown||!/^https?:/.test(location.protocol)||BUILD.indexOf('__')===0)return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){shown=true;const d=document.createElement('div');d.className='update-bar';d.innerHTML='A new version of the tracker is ready. ';const b=document.createElement('button');b.className='btn';b.type='button';b.textContent='Update now';b.onclick=()=>location.reload();d.append(b);document.body.append(d);}}catch(e){}}
 setTimeout(check,3000);setInterval(check,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});})();
 const THEMES={navy:['RLC Navy','#212988','#0b1a3d','#daa900','#8a6a00','#142a5c','#2b3f7a','#8c9bff'],emerald:['Emerald','#0f5c45','#072a20','#d4a72c','#7a5e0c','#0f3d30','#1f5a48','#6fd3a8'],maroon:['Maroon','#7a1c2e','#2a0a10','#e0b04a','#86600a','#4a1420','#6b2a38','#ff9aab'],teal:['Teal','#0e6474','#06262d','#f2a541','#8f5300','#0d3d46','#1d5a66','#6fd6e6'],purple:['Purple','#4b2a86','#1a0f33','#e8b923','#7f640a','#2c1b52','#45306f','#b79cff'],charcoal:['Charcoal','#2b2f36','#121417','#c9a227','#76600f','#23272d','#3a3f47','#b8c0cc'],rose:['Rose','#a23b62','#2e0f1c','#f0c05a','#835600','#4d1a30','#6e2c47','#ff9cc2'],ocean:['Ocean','#1f5fa8','#0a2142','#f5b82e','#865f00','#123a6b','#24508a','#8ec5ff']};
@@ -621,10 +621,20 @@ function imgFor(id,alt,type){const im=document.createElement('img');im.alt=alt||
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const NL='\n';
 const CH=[{k:'viber',n:'Viber'},{k:'whatsapp',n:'WhatsApp'},{k:'sms',n:'SMS'},{k:'call',n:'Call'},{k:'email',n:'Email'},{k:'facebook',n:'Facebook'}];
-const FB_RE=/(?:https?:\/\/)?(?:(?:www|m|web|mbasic)\.)?(?:facebook\.com|fb\.com|fb\.me|m\.me)\/[^\s,;]+/i;
-function fbUrl(l){let v=String(l.fb||'').trim();if(!v)return '';if(!/^https?:\/\//i.test(v)){if(/^(?:(?:www|m|web)\.)?(facebook\.com|fb\.com|fb\.me|m\.me)\//i.test(v))v='https://'+v;else if(/^[A-Za-z0-9.]{3,}$/.test(v))v='https://www.facebook.com/'+v;else return '';}return v;}
-function fbChat(l){const u=fbUrl(l);if(!u)return '';let x;try{x=new URL(u);}catch(e){return u;}const h=x.hostname.replace(/^(www|m|web|mbasic)\./,'');const seg=x.pathname.split('/').filter(Boolean);
-if(h==='m.me')return u;if(seg[0]==='profile.php'){const id=x.searchParams.get('id');return id?'https://m.me/'+id:u;}if(seg[0]==='people'&&seg[2])return 'https://m.me/'+seg[2];if(seg[0]==='messages'||seg[0]==='groups'||seg[0]==='share')return u;if(seg[0]&&/^[A-Za-z0-9.]+$/.test(seg[0]))return 'https://m.me/'+seg[0];return u;}
+const FB_RE=/(?:https?:\/\/)?(?:(?:www|m|web|mbasic)\.)?(?:facebook\.com|fb\.com|fb\.me|m\.me|messenger\.com)\/[^\s,;]+/i;
+function fbUrl(l){let v=String(l.fb||'').trim();if(!v)return '';if(!/^https?:\/\//i.test(v)){if(/^(?:(?:www|m|web)\.)?(facebook\.com|fb\.com|fb\.me|m\.me|messenger\.com)\//i.test(v))v='https://'+v;else if(/^[A-Za-z0-9.]{3,}$/.test(v))v='https://www.facebook.com/'+v;else return '';}return v;}
+function fbTarget(u){let x;try{x=new URL(u);}catch(e){return null;}const h=x.hostname.replace(/^(www|m|web|mbasic)\./,'');const seg=x.pathname.split('/').filter(Boolean);const ti=seg.indexOf('t');
+if(h==='m.me')return seg[0]?{who:seg[0],thread:false}:null;
+if(h==='messenger.com'&&ti>=0&&seg[ti+1])return {who:seg[ti+1],thread:true};
+if(seg[0]==='messages'&&ti>=0&&seg[ti+1])return {who:seg[ti+1],thread:true};
+if(seg[0]==='profile.php'){const id=x.searchParams.get('id');return id?{who:id,thread:false}:null;}
+if(seg[0]==='people'&&seg[2])return {who:seg[2],thread:false};
+if(['groups','share','pages','watch','photo','story.php','permalink.php','events','marketplace'].includes(seg[0]))return null;
+if(seg[0]&&/^[A-Za-z0-9.]+$/.test(seg[0]))return {who:seg[0],thread:false};return null;}
+/* Phone: open the Messenger app straight to the chat. Computer: open Messenger in the browser. */
+function fbChat(l){const u=fbUrl(l);if(!u)return '';const t=fbTarget(u);if(!t)return u;const num=/^\d+$/.test(t.who);
+if(MOBILE)return num?'fb-messenger://user-thread/'+t.who:'https://m.me/'+t.who;
+return t.thread?u:num?'https://www.facebook.com/messages/t/'+t.who:'https://m.me/'+t.who;}
 const STATUS=['New','Contacted','Replied','Interested','Viewing scheduled','Reserved','No response','Not interested'];
 const SIT={first:'First message',noreply:'Follow-up',reengage:'Re-engage',info:'Send details',viewing:'Invite to viewing',after_view:'After-viewing message',price:'Budget options',terms:'Explain payment terms',rfo_vs_ps:'RFO vs pre-selling guide',closing:'Reservation message',thanks:'Thank-you and referral'};
 const SYM={none:'○',sent:'→',replied:'✓',failed:'✕'};
@@ -902,7 +912,7 @@ async function copyStr(t){try{await navigator.clipboard.writeText(t);return true
 function withLinks(body,links){if(!links)return body;for(const s of ['Warm regards,','Lubos na gumagalang,','Thank you po,']){const i=body.lastIndexOf(NL+NL+s);if(i>=0)return body.slice(0,i)+NL+NL+links+body.slice(i);}return body+NL+NL+links;}
 let EMAILJOB=null;
 async function sendSeqEmail(id,n){const l=norm(getLead(id)||{});if(!l.id)return;
-if(!l.email&&fbUrl(l)){const lang=LMAP[l.lang]||'tg';const txt=window.MS_TPL.make(l,SEQ[n],lang,'viber');const link=chatLink(l);const msg=link?txt+NL+NL+(lang==='en'?'Photos and details:':'Photos at details:')+NL+link:txt;const w=window.open(fbChat(l),'_blank');if(w)try{w.opener=null;}catch(e){}await copyStr(msg);toast('Follow-up '+n+' copied. In Messenger, paste it and tap Send.');if(!w)toast('Allow pop-ups for this site, or tap the Facebook button.',true);logCh(id,'facebook',n);const x=norm(getLead(id));x.emailSeq[n].via='facebook';saveLead(x);return;}
+if(!l.email&&fbUrl(l)){const lang=LMAP[l.lang]||'tg';const txt=window.MS_TPL.make(l,SEQ[n],lang,'viber');const link=chatLink(l);const msg=link?txt+NL+NL+(lang==='en'?'Photos and details:':'Photos at details:')+NL+link:txt;const cp=copyStr(msg);logCh(id,'facebook',n);const x=norm(getLead(id));x.emailSeq[n].via='facebook';saveLead(x);const dest=fbChat(l);if(MOBILE){location.href=dest;await cp;return;}const w=window.open(dest,'_blank');if(w)try{w.opener=null;}catch(e){}await cp;toast('Follow-up '+n+' copied. In Messenger, paste it and tap Send.');if(!w)toast('Allow pop-ups for this site, or tap the Facebook button.',true);return;}
 toast('Preparing Email '+n+'…');await loadMats();const lang=LMAP[l.lang]||'tg';const m=splitEmail(window.MS_TPL.make(l,SEQ[n],lang,'email'));const body=withLinks(m.body,emailLinks(l));
 if(!SYNC){if(!l.email){toast('Add this client\'s email first (tap the name).',true);return;}location.href='mailto:'+encodeURIComponent(l.email)+'?subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(body);setTimeout(()=>logCh(id,'email',n),400);return;}
 openEmailEditor({id,n,to:l.email||'',subject:m.subject,body,files:l.cloud||[],mats:matFiles(l),tick:n===1,note:l.emailSeq[n]?'Email '+n+' was already sent on '+fd(localDate(l.emailSeq[n].at))+'. Sending again.':''});}
