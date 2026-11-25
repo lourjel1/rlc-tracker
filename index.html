@@ -136,6 +136,7 @@ select.sel{width:auto}
 .update-bar{position:fixed;left:0;right:0;top:0;z-index:50;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 16px;background:var(--gold);color:#121633;font-weight:600;font-size:14px}.update-bar .btn{background:#121633;color:#fff;padding:6px 14px}
 .tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;background:var(--line);color:var(--ink)}.tag.ok{background:var(--ok);color:#fff}.tag.warn{background:var(--warn);color:#fff}
 .steps{margin:8px 0 10px;padding-left:20px;font-size:13px;line-height:1.55}.steps li{margin-bottom:6px}
+.via{display:inline-block;margin:3px 0 1px;padding:1px 8px;border-radius:99px;font-size:10.5px;font-weight:600;background:var(--line);color:var(--ink);white-space:nowrap}.via.none{background:var(--bad);color:#fff}
 .chw{display:flex;flex-direction:column;align-items:center;gap:2px}.chu{font-size:10px;color:var(--muted);white-space:nowrap}.chu.rep{color:var(--ok)}
 .c-note{width:170px;min-width:140px;font:inherit;font-size:12px;padding:4px 6px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink);resize:vertical}
 .mpick{display:inline-flex;gap:6px;align-items:center;cursor:pointer;padding:2px 8px;border:1px solid var(--line);border-radius:var(--r)}.sub2{padding-left:40px}.mfile{display:inline-flex;gap:6px;align-items:center;cursor:pointer}.mfile.on{color:var(--ok);font-weight:600}.pjrow{margin-top:10px;font-weight:600}.selbar{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--muted);margin-bottom:4px}.addproj{margin-top:12px;font:inherit;font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);color:var(--ink)}
@@ -351,6 +352,7 @@ label.btn2 input{display:none}
 <label class="field">Full name *<input id="f-name" autocomplete="off"></label>
 <label class="field">Mobile number<input id="f-phone" inputmode="tel" placeholder="09xx xxx xxxx"></label>
 <label class="field">Email<input id="f-email" type="email"></label>
+<label class="field">Facebook link<input id="f-fb" placeholder="facebook.com/their.name" autocapitalize="none" spellcheck="false"></label>
 <label class="field">Where you met<select id="f-source"><option>Booth</option><option>Facebook page</option><option>Referral</option><option>Walk-in</option><option>Ads / website</option><option>Other</option></select></label>
 <label class="field">Reply in<select id="f-lang"><option>Taglish</option><option>Tagalog / Filipino</option><option>English</option></select></label>
 <label class="field">How they reply<select id="f-style"><option value="">Not sure yet</option><option>Quick replier</option><option>Slow replier</option><option>Short answers / busy</option><option>Asks a lot of details</option><option>Price-sensitive</option><option>Undecided / needs reassurance</option><option>Prefers calls</option></select></label>
@@ -384,7 +386,7 @@ label.btn2 input{display:none}
 </div>
 
 <div class="legend"><span id="client-count"></span><span><b class="st-bad">Red</b> = follow-up needed today</span><span><b class="ok">✓</b> = done today</span><span>Tap a name to edit</span></div>
-<div class="scroll tbl-wrap"><table class="ctable"><thead><tr><th>Name</th><th>Mobile</th><th>Email</th><th>Project</th><th>RFO / Pre</th><th>Message</th><th>Emails</th><th>Files</th><th>Notes</th><th>Status</th><th></th></tr></thead><tbody id="client-rows"></tbody></table></div>
+<div class="scroll tbl-wrap"><table class="ctable"><thead><tr><th>Name</th><th>Mobile</th><th>Email</th><th>Project</th><th>Message</th><th>Follow-ups</th><th>Files</th><th>Notes</th><th>Status</th><th></th></tr></thead><tbody id="client-rows"></tbody></table></div>
 </section>
 
 <section class="sec" id="templates" hidden>
@@ -559,7 +561,7 @@ if(chan==='sms')return f(t.h)+' '+f(t.c)+' – LJ, RLC Residences';
 if(style==='Short answers / busy')return f(t.h)+' '+f(t.c)+NL+NL+'– LJ Quezada, RLC Residences'+(fine?NL+NL+fine:'');
 return [f(t.h),body,f(t.c)].join(NL+NL)+NL+NL+'– LJ Quezada, RLC Residences'+(fine?NL+NL+fine:'');}
 window.MS_TPL={make,HINT,STYLE,SUBJECT};
-window.MS_QUOTES=[`Every follow-up is a door you leave open.`,`The fortune is in the follow-up.`,`Hindi lahat ng no ay forever. Minsan, not yet lang.`,`One more message today could be one more family's new home.`,`Clients forget offers. They remember how you made them feel.`,`Small daily steps, big closing month.`,`Kapag pagod ka, magpahinga. Pero huwag kang susuko.`,`Your next client is waiting for your next message.`,`Discipline is choosing your goal over your mood.`,`A seen is not a no. Follow up with kindness.`,`Building dreams, one key at a time.`,`Bawat no ay isang hakbang palapit sa yes.`,`Be the agent they remember when they are ready.`,`Ngayon ang pinakamagandang araw para mag-follow up.`,`Helping someone find a home is work worth doing well.`,`You don't need more leads today. Follow up the ones you have.`,`Kaya mo 'yan, LJ! Isang tawag pa.`,`Progress, not perfection. Send the message.`,`Trust is built one honest answer at a time.`,`Hustle with heart. Serve with patience.`,`Today's follow-ups are next month's reservations.`,`Smile before you dial. They can hear it.`,`Sipag at tiyaga: may nilagang reservation.`,`Your consistency is your best marketing.`];
+window.MS_QUOTES=[`I can do all things through Christ which strengtheneth me. — Philippians 4:13 (KJV)`,`Commit thy works unto the LORD, and thy thoughts shall be established. — Proverbs 16:3 (KJV)`,`Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest. — Joshua 1:9 (KJV)`,`And let us not be weary in well doing: for in due season we shall reap, if we faint not. — Galatians 6:9 (KJV)`,`And whatsoever ye do, do it heartily, as to the Lord, and not unto men. — Colossians 3:23 (KJV)`,`Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths. — Proverbs 3:5-6 (KJV)`,`But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint. — Isaiah 40:31 (KJV)`,`The thoughts of the diligent tend only to plenteousness. — Proverbs 21:5 (KJV)`,`Whatsoever thy hand findeth to do, do it with thy might. — Ecclesiastes 9:10 (KJV)`,`In all labour there is profit: but the talk of the lips tendeth only to penury. — Proverbs 14:23 (KJV)`,`Commit thy way unto the LORD; trust also in him; and he shall bring it to pass. — Psalm 37:5 (KJV)`,`Ask, and it shall be given you; seek, and ye shall find; knock, and it shall be opened unto you. — Matthew 7:7 (KJV)`,`And we know that all things work together for good to them that love God. — Romans 8:28 (KJV)`,`For God hath not given us the spirit of fear; but of power, and of love, and of a sound mind. — 2 Timothy 1:7 (KJV)`,`This is the day which the LORD hath made; we will rejoice and be glad in it. — Psalm 118:24 (KJV)`,`His compassions fail not. They are new every morning: great is thy faithfulness. — Lamentations 3:22-23 (KJV)`,`Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee. — Isaiah 41:10 (KJV)`,`Seest thou a man diligent in his business? he shall stand before kings. — Proverbs 22:29 (KJV)`,`If thou canst believe, all things are possible to him that believeth. — Mark 9:23 (KJV)`,`Be strong and of a good courage, fear not, nor be afraid of them: for the LORD thy God, he it is that doth go with thee; he will not fail thee, nor forsake thee. — Deuteronomy 31:6 (KJV)`];
 })();
 
 /* ---------- Data and storage ---------- */
@@ -582,7 +584,7 @@ function aesDec(key,iv,ct){return crypto.subtle.decrypt({name:'AES-GCM',iv},key,
 const pubSign=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_SIGN),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
 const pubEnc=()=>crypto.subtle.importKey('spki',fromB64(ADMIN_PUB_ENC),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
 async function verifySig(msg,sig){try{return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await pubSign(),fromB64(sig),te.encode(msg));}catch(e){return false;}}
-const BUILD='20261123174452';
+const BUILD='20261125134943';
 (function(){let shown=false;async function check(){if(shown||!/^https?:/.test(location.protocol)||BUILD.indexOf('__')===0)return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/const BUILD='([^']+)'/);if(m&&m[1]!==BUILD){shown=true;const d=document.createElement('div');d.className='update-bar';d.innerHTML='A new version of the tracker is ready. ';const b=document.createElement('button');b.className='btn';b.type='button';b.textContent='Update now';b.onclick=()=>location.reload();d.append(b);document.body.append(d);}}catch(e){}}
 setTimeout(check,3000);setInterval(check,5*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});})();
 const THEMES={navy:['RLC Navy','#212988','#0b1a3d','#daa900','#8a6a00','#142a5c','#2b3f7a','#8c9bff'],emerald:['Emerald','#0f5c45','#072a20','#d4a72c','#7a5e0c','#0f3d30','#1f5a48','#6fd3a8'],maroon:['Maroon','#7a1c2e','#2a0a10','#e0b04a','#86600a','#4a1420','#6b2a38','#ff9aab'],teal:['Teal','#0e6474','#06262d','#f2a541','#8f5300','#0d3d46','#1d5a66','#6fd6e6'],purple:['Purple','#4b2a86','#1a0f33','#e8b923','#7f640a','#2c1b52','#45306f','#b79cff'],charcoal:['Charcoal','#2b2f36','#121417','#c9a227','#76600f','#23272d','#3a3f47','#b8c0cc'],rose:['Rose','#a23b62','#2e0f1c','#f0c05a','#835600','#4d1a30','#6e2c47','#ff9cc2'],ocean:['Ocean','#1f5fa8','#0a2142','#f5b82e','#865f00','#123a6b','#24508a','#8ec5ff']};
@@ -618,7 +620,11 @@ function imgFor(id,alt,type){const im=document.createElement('img');im.alt=alt||
 /* ---------- Helpers ---------- */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const NL='\n';
-const CH=[{k:'viber',n:'Viber'},{k:'whatsapp',n:'WhatsApp'},{k:'sms',n:'SMS'},{k:'call',n:'Call'},{k:'email',n:'Email'}];
+const CH=[{k:'viber',n:'Viber'},{k:'whatsapp',n:'WhatsApp'},{k:'sms',n:'SMS'},{k:'call',n:'Call'},{k:'email',n:'Email'},{k:'facebook',n:'Facebook'}];
+const FB_RE=/(?:https?:\/\/)?(?:(?:www|m|web|mbasic)\.)?(?:facebook\.com|fb\.com|fb\.me|m\.me)\/[^\s,;]+/i;
+function fbUrl(l){let v=String(l.fb||'').trim();if(!v)return '';if(!/^https?:\/\//i.test(v)){if(/^(?:(?:www|m|web)\.)?(facebook\.com|fb\.com|fb\.me|m\.me)\//i.test(v))v='https://'+v;else if(/^[A-Za-z0-9.]{3,}$/.test(v))v='https://www.facebook.com/'+v;else return '';}return v;}
+function fbChat(l){const u=fbUrl(l);if(!u)return '';let x;try{x=new URL(u);}catch(e){return u;}const h=x.hostname.replace(/^(www|m|web|mbasic)\./,'');const seg=x.pathname.split('/').filter(Boolean);
+if(h==='m.me')return u;if(seg[0]==='profile.php'){const id=x.searchParams.get('id');return id?'https://m.me/'+id:u;}if(seg[0]==='people'&&seg[2])return 'https://m.me/'+seg[2];if(seg[0]==='messages'||seg[0]==='groups'||seg[0]==='share')return u;if(seg[0]&&/^[A-Za-z0-9.]+$/.test(seg[0]))return 'https://m.me/'+seg[0];return u;}
 const STATUS=['New','Contacted','Replied','Interested','Viewing scheduled','Reserved','No response','Not interested'];
 const SIT={first:'First message',noreply:'Follow-up',reengage:'Re-engage',info:'Send details',viewing:'Invite to viewing',after_view:'After-viewing message',price:'Budget options',terms:'Explain payment terms',rfo_vs_ps:'RFO vs pre-selling guide',closing:'Reservation message',thanks:'Thank-you and referral'};
 const SYM={none:'○',sent:'→',replied:'✓',failed:'✕'};
@@ -634,7 +640,7 @@ const days=(a,b)=>Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/8
 const fd=s=>{if(!s)return '—';const d=new Date(String(s).slice(0,10)+'T00:00:00');return isNaN(d)?'—':d.toLocaleDateString('en-PH',{month:'short',day:'numeric'});};
 const pesoS=v=>!v?'—':v>=1e6?'₱'+(v/1e6).toLocaleString('en-PH',{maximumFractionDigits:2})+'M':'₱'+Math.round(v).toLocaleString('en-PH');
 const J=(v,d)=>{if(typeof v==='string'){try{return JSON.parse(v);}catch(e){return d;}}return v==null?d:v;};
-function norm(l){return Object.assign({},l,{channels:J(l.channels,{})||{},log:J(l.log,[])||[],proofs:J(l.proofs,[])||[],files:J(l.files,[])||[],projects:J(l.projects,[])||[],emailSeq:J(l.emailSeq,{})||{},budget:+l.budget||0,monthly:+l.monthly||0});}
+function norm(l){let fbn='';if(!l.fb){const nt=String(l.notes||'');const m1=nt.match(FB_RE),m2=nt.match(/facebook:\s*([^\s,;]+)/i);fbn=m1?m1[0]:m2?m2[1]:'';}return Object.assign({},l,{fb:l.fb||fbn,channels:J(l.channels,{})||{},log:J(l.log,[])||[],proofs:J(l.proofs,[])||[],files:J(l.files,[])||[],projects:J(l.projects,[])||[],emailSeq:J(l.emailSeq,{})||{},budget:+l.budget||0,monthly:+l.monthly||0});}
 const chState=(l,k)=>(l.channels[k]&&l.channels[k].s)||'none';
 const propOf=l=>l.projects.concat(l.otherProp?[l.otherProp]:[]).join(', ');
 const mk=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;};
@@ -645,7 +651,7 @@ const getVal=s=>{const e=$(s);return e?String(e.value||''):'';};
 const setVal=(s,v)=>{const e=$(s);if(e)e.value=v==null?'':v;};
 
 /* ---------- Plan and priority ---------- */
-function plan(l){if(['Reserved','Not interested'].includes(l.status))return null;const t=today();const d=days(t,l.created?localDate(l.created):t)+1;if(d<1||d>3)return null;return {day:d,items:[{k:'email',n:'Email '+d,done:!!l.emailSeq[d]}]};}
+function plan(l){if(['Reserved','Not interested'].includes(l.status))return null;const t=today();const d=days(t,l.created?localDate(l.created):t)+1;if(d<1||d>3)return null;return {day:d,items:[{k:'email',n:(!l.email&&fbUrl(l)?'Facebook follow-up ':'Email ')+d,done:!!l.emailSeq[d]}]};}
 function analyze(l){const t=today();const closed=['Reserved','Not interested'].includes(l.status);const tried=CH.filter(c=>chState(l,c.k)!=='none');const rep=CH.filter(c=>chState(l,c.k)==='replied');const attempts=l.log.length;const due=!!(l.next&&l.next<=t);const over=due?days(t,l.next):0;let score=0,PL=0,P1=null;const why=[];
 if(closed){score=-10;}else{
 if(['Interested','Viewing scheduled'].includes(l.status)){score+=4;why.push(l.status==='Viewing scheduled'?'viewing scheduled':'interested');}
@@ -699,7 +705,7 @@ const imgs=l.proofs.filter(p=>String(p.type||'').startsWith('image/')).slice(-4)
 const act=mk('div','acts');act.append(btn('Write reply',()=>openTpl(l.id)),btn('Edit',()=>openEditor(l.id)),btn('Proof ('+l.proofs.length+')',()=>openEditor(l.id,true)));c.append(act);return c;}
 
 /* ---------- Editor ---------- */
-const FIELDS={'#f-name':'name','#f-phone':'phone','#f-email':'email','#f-source':'source','#f-lang':'lang','#f-style':'style','#f-other':'otherProp','#f-unit':'unit','#f-stage':'stage','#f-purpose':'purpose','#f-terms':'terms','#f-status':'status','#f-next':'next','#f-notes':'notes'};
+const FIELDS={'#f-name':'name','#f-phone':'phone','#f-email':'email','#f-fb':'fb','#f-source':'source','#f-lang':'lang','#f-style':'style','#f-other':'otherProp','#f-unit':'unit','#f-stage':'stage','#f-purpose':'purpose','#f-terms':'terms','#f-status':'status','#f-next':'next','#f-notes':'notes'};
 const DEF={source:'Booth',lang:'Taglish',status:'New'};
 let msEdit=null;
 function showTab(id){$$('.sec').forEach(s=>{s.hidden=s.id!==id;});$$('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===id?'true':'false'));try{history.replaceState(null,'','#'+id);}catch(e){}}
@@ -788,8 +794,8 @@ $('#t-file').onchange=e=>uploadSendFiles(e.target.files);
 
 
 /* ---------- Import from a sheet ---------- */
-const IMP_FIELDS=[['name','Full name'],['first','First name'],['last','Last name'],['phone','Mobile number'],['email','Email'],['project','Property'],['unit','Unit type'],['stage','RFO or pre-selling'],['purpose','Investment or end use'],['budget','Total budget'],['monthly','Monthly budget'],['terms','Payment terms'],['source','Where you met'],['notes','Notes']];
-const IMP_GUESS=[['email',['email','e-mail','mail']],['first',['first name','firstname','given name']],['last',['last name','lastname','surname','family name']],['monthly',['monthly','per month','amortization','amortisation']],['budget',['budget','price','tcp','amount']],['unit',['unit','bedroom','room type']],['project',['property','project','condo','development','interest']],['phone',['mobile','phone','cell','contact no','contact number','number','cp','tel','viber','whatsapp']],['stage',['rfo','pre-selling','preselling','pre selling','stage']],['purpose',['purpose','investment','end use','end-use']],['terms',['terms','payment','financing','mode']],['source','source,where,met at,channel,lead source'.split(',')],['notes',['notes','note','remarks','comment','message']],['name',['name','client','customer','lead','buyer']]];
+const IMP_FIELDS=[['name','Full name'],['first','First name'],['last','Last name'],['phone','Mobile number'],['email','Email'],['project','Property'],['unit','Unit type'],['stage','RFO or pre-selling'],['purpose','Investment or end use'],['budget','Total budget'],['monthly','Monthly budget'],['terms','Payment terms'],['source','Where you met'],['fb','Facebook link'],['notes','Notes']];
+const IMP_GUESS=[['fb',['facebook','fb link','fb account','messenger']],['email',['email','e-mail','mail']],['first',['first name','firstname','given name']],['last',['last name','lastname','surname','family name']],['monthly',['monthly','per month','amortization','amortisation']],['budget',['budget','price','tcp','amount']],['unit',['unit','bedroom','room type']],['project',['property','project','condo','development','interest']],['phone',['mobile','phone','cell','contact no','contact number','number','cp','tel','viber','whatsapp']],['stage',['rfo','pre-selling','preselling','pre selling','stage']],['purpose',['purpose','investment','end use','end-use']],['terms',['terms','payment','financing','mode']],['source','source,where,met at,channel,lead source'.split(',')],['notes',['notes','note','remarks','comment','message']],['name',['name','client','customer','lead','buyer']]];
 const KNOWN_PROJECTS=[['MIRA',['mira']],['Sierra Valley Gardens',['sierra','svg']],['Cirrus',['cirrus']],['The Sapphire Bloc',['sapphire']],['Le Pont',['le pont','lepont']],['SYNC Residences',['sync']],['Gateway Regency Studios',['gateway']],['Woodsville Crest',['woodsville']],['Springdale Baliwag',['springdale']],['Port Residences',['port residences']]];
 let IMP={rows:[],head:[],map:{}};
 function parseCSV(t){t=String(t).replace(/^﻿/,'');const first=t.split(/\r?\n/)[0]||'';const d=[',',';','\t'].sort((a,b)=>first.split(b).length-first.split(a).length)[0];const rows=[];let row=[],f='',q=false;
@@ -813,9 +819,9 @@ function impUnit(v){const t=String(v||'').toLowerCase();if(!t)return '';if(t.inc
 function impStage(v){const t=String(v||'').toLowerCase();if(!t)return '';const r=t.includes('rfo')||t.includes('ready'),pz=t.includes('pre');return r&&pz?'Either':r?'RFO':pz?'Pre-selling':'';}
 function impPurpose(v){const t=String(v||'').toLowerCase();if(!t)return '';const i=t.includes('invest'),e=t.includes('end')||t.includes('live')||t.includes('own use')||t.includes('residen');return i&&e?'Both':i?'Investment':e?'End use':'';}
 function impBuild(){const m=IMP.map;const have=new Set();leads.forEach(l=>{const k=phoneKey(l.phone);if(k)have.add('p'+k);if(l.email)have.add('e'+String(l.email).toLowerCase());});const out=[];let dup=0,blank=0;const now=new Date().toISOString();
-IMP.rows.forEach(r=>{let name=cell(r,m.name);if(!name)name=[cell(r,m.first),cell(r,m.last)].filter(Boolean).join(' ');const phone=impPhone(cell(r,m.phone)),email=cell(r,m.email).toLowerCase();if(!name&&!phone&&!email){blank++;return;}
+IMP.rows.forEach(r=>{let name=cell(r,m.name);if(!name)name=[cell(r,m.first),cell(r,m.last)].filter(Boolean).join(' ');const phone=impPhone(cell(r,m.phone)),email=cell(r,m.email).toLowerCase();if(!name&&!phone&&!email&&!cell(r,m.fb)){blank++;return;}
 const pk=phoneKey(phone);if((pk&&have.has('p'+pk))||(email&&have.has('e'+email))){dup++;return;}if(pk)have.add('p'+pk);if(email)have.add('e'+email);const pr=impProjects(cell(r,m.project));
-out.push({id:newId('c'),name:name||phone||email,phone,email,source:cell(r,m.source)||'Imported',lang:'Taglish',style:'',projects:pr.projects,otherProp:pr.other,unit:impUnit(cell(r,m.unit)),stage:impStage(cell(r,m.stage)),purpose:impPurpose(cell(r,m.purpose)),budget:impNum(cell(r,m.budget)),monthly:impNum(cell(r,m.monthly)),terms:cell(r,m.terms),status:'New',next:today(),notes:cell(r,m.notes),created:now,updated:now,channels:{},log:[],proofs:[],files:[]});});
+const fb=cell(r,m.fb);out.push({id:newId('c'),name:name||phone||email||fb,phone,email,fb,source:cell(r,m.source)||'Imported',lang:'Taglish',style:'',projects:pr.projects,otherProp:pr.other,unit:impUnit(cell(r,m.unit)),stage:impStage(cell(r,m.stage)),purpose:impPurpose(cell(r,m.purpose)),budget:impNum(cell(r,m.budget)),monthly:impNum(cell(r,m.monthly)),terms:cell(r,m.terms),status:'New',next:today(),notes:cell(r,m.notes),created:now,updated:now,channels:{},log:[],proofs:[],files:[]});});
 return {out,dup,blank};}
 function impRender(){const sel=$('#imp-map');sel.replaceChildren();IMP_FIELDS.forEach(([f,label])=>{const l=mk('label','field',label);const s=document.createElement('select');s.append(new Option('— not used —',''));IMP.head.forEach((h,i)=>s.append(new Option(String(h||'Column '+(i+1)),String(i))));s.value=IMP.map[f]!=null?String(IMP.map[f]):'';s.onchange=()=>{if(s.value==='')delete IMP.map[f];else IMP.map[f]=+s.value;impPreview();};l.append(s);sel.append(l);});impPreview();}
 function impPreview(){const {out,dup,blank}=impBuild();$('#imp-sum').textContent=out.length+' new client'+(out.length===1?'':'s')+' to add'+(dup?' · '+dup+' already in your list (skipped)':'')+(blank?' · '+blank+' empty row'+(blank===1?'':'s')+' skipped':'')+'.';
@@ -889,13 +895,14 @@ function emailLinks(l){const SL=selLines(l,'• ');if(SL.length)return 'Photos a
 
 /* ---------- Message for a quick-send button ---------- */
 function quickMsg(l,k){const a=analyze(l);const lang=LMAP[l.lang]||'tg';const txt=window.MS_TPL.make(l,a.sit,lang,k==='sms'?'sms':'viber');const link=chatLink(l);return link?txt+NL+NL+(lang==='en'?'Photos and details:':'Photos at details:')+(link.includes(NL)||selMats(l).length?NL:' ')+link:txt;}
-function chanHref(l,k){const num=intlNum(l.phone);if(k==='viber')return MOBILE?'viber://forward?text='+encodeURIComponent(quickMsg(l,k)):(num?'viber://chat?number=%2B'+num:'');if(!num)return '';if(k==='whatsapp')return 'https://wa.me/'+num+'?text='+encodeURIComponent(quickMsg(l,k));if(k==='sms')return 'sms:+'+num+'&body='+encodeURIComponent(quickMsg(l,k));if(k==='call')return 'tel:+'+num;return '';}
+function chanHref(l,k){if(k==='facebook')return fbChat(l);const num=intlNum(l.phone);if(k==='viber')return MOBILE?'viber://forward?text='+encodeURIComponent(quickMsg(l,k)):(num?'viber://chat?number=%2B'+num:'');if(!num)return '';if(k==='whatsapp')return 'https://wa.me/'+num+'?text='+encodeURIComponent(quickMsg(l,k));if(k==='sms')return 'sms:+'+num+'&body='+encodeURIComponent(quickMsg(l,k));if(k==='call')return 'tel:+'+num;return '';}
 async function copyStr(t){try{await navigator.clipboard.writeText(t);return true;}catch(e){return false;}}
 
 /* ---------- Sending emails 1, 2, 3 ---------- */
 function withLinks(body,links){if(!links)return body;for(const s of ['Warm regards,','Lubos na gumagalang,','Thank you po,']){const i=body.lastIndexOf(NL+NL+s);if(i>=0)return body.slice(0,i)+NL+NL+links+body.slice(i);}return body+NL+NL+links;}
 let EMAILJOB=null;
 async function sendSeqEmail(id,n){const l=norm(getLead(id)||{});if(!l.id)return;
+if(!l.email&&fbUrl(l)){const lang=LMAP[l.lang]||'tg';const txt=window.MS_TPL.make(l,SEQ[n],lang,'viber');const link=chatLink(l);const msg=link?txt+NL+NL+(lang==='en'?'Photos and details:':'Photos at details:')+NL+link:txt;const w=window.open(fbChat(l),'_blank');if(w)try{w.opener=null;}catch(e){}await copyStr(msg);toast('Follow-up '+n+' copied. In Messenger, paste it and tap Send.');if(!w)toast('Allow pop-ups for this site, or tap the Facebook button.',true);logCh(id,'facebook',n);const x=norm(getLead(id));x.emailSeq[n].via='facebook';saveLead(x);return;}
 toast('Preparing Email '+n+'…');await loadMats();const lang=LMAP[l.lang]||'tg';const m=splitEmail(window.MS_TPL.make(l,SEQ[n],lang,'email'));const body=withLinks(m.body,emailLinks(l));
 if(!SYNC){if(!l.email){toast('Add this client\'s email first (tap the name).',true);return;}location.href='mailto:'+encodeURIComponent(l.email)+'?subject='+encodeURIComponent(m.subject)+'&body='+encodeURIComponent(body);setTimeout(()=>logCh(id,'email',n),400);return;}
 openEmailEditor({id,n,to:l.email||'',subject:m.subject,body,files:l.cloud||[],mats:matFiles(l),tick:n===1,note:l.emailSeq[n]?'Email '+n+' was already sent on '+fd(localDate(l.emailSeq[n].at))+'. Sending again.':''});}
@@ -939,18 +946,18 @@ function chUse(l,k){const L=l.log.filter(e=>e.ch===k&&e.s!=='none');const last=L
 function ago(iso){const d=days(today(),localDate(iso));return d<=0?'today':d===1?'yesterday':d+'d ago';}
 function cbtn(l,P,left,k,label){const u=chUse(l,k);const done=u.today;const rep=chState(l,k)==='replied';
 const h=chanHref(l,k);const a=mk('a','cbtn'+(done?' done':''),(done?'✓ ':'')+label);a.title=label+': '+(u.n?'used '+u.n+'× · last '+ago(u.last)+' '+new Date(u.last).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'not used yet')+(rep?' · replied':'');
-if(!h){a.className+=' off';a.href='#';a.onclick=e=>{e.preventDefault();toast(l.phone?'This number cannot be used.':'Add a mobile number first (tap the name).',true);};return a;}
+if(!h){a.className+=' off';a.href='#';a.onclick=e=>{e.preventDefault();toast(k==='facebook'?(l.fb?'That Facebook link cannot be opened. Check it (tap the name).':'Add their Facebook link first (tap the name).'):l.phone?'This number cannot be used.':'Add a mobile number first (tap the name).',true);};const w0=mk('div','chw');w0.append(a,mk('div','chu','—'));return w0;}
 a.href=h;if(h.startsWith('https:')){a.target='_blank';a.rel='noopener';}
-a.onclick=()=>{a.href=chanHref(norm(getLead(l.id)),k);if(k!=='call')copyStr(quickMsg(l,k));setTimeout(()=>logCh(l.id,k),400);};const w=mk('div','chw');w.append(a,mk('div','chu'+(rep?' rep':''),u.n?(rep?'replied · ':'')+u.n+'× · '+ago(u.last):'—'));return w;}
-function eswitch(l,P,left,n){const sent=l.emailSeq[n];const need=left.some(i=>i.k==='email')&&P&&P.day===n;const b=mk('button','esw'+(sent?' done':need?' need':''),(sent?'✓ ':'')+'E'+n);b.type='button';b.title=sent?'Email '+n+' sent '+fd(localDate(sent.at)):'Send Email '+n+(need?' (due today)':'');b.onclick=()=>sendSeqEmail(l.id,n);const w=mk('div','chw');w.append(b,mk('div','chu',sent?ago(sent.at):need?'due today':'—'));return w;}
+a.onclick=()=>{a.href=chanHref(norm(getLead(l.id)),k);if(k!=='call')copyStr(quickMsg(l,k));if(k==='facebook')toast('Message copied. In Messenger, paste it and tap Send.');setTimeout(()=>logCh(l.id,k),400);};const w=mk('div','chw');w.append(a,mk('div','chu'+(rep?' rep':''),u.n?(rep?'replied · ':'')+u.n+'× · '+ago(u.last):'—'));return w;}
+function eswitch(l,P,left,n){const sent=l.emailSeq[n];const need=left.some(i=>i.k==='email')&&P&&P.day===n;const viaFb=!l.email&&!!fbUrl(l);const b=mk('button','esw'+(sent?' done':need?' need':''),(sent?'✓ ':'')+(viaFb?'FB':'E')+n);b.type='button';b.title=sent?'Follow-up '+n+' sent '+fd(localDate(sent.at))+(sent.via==='facebook'?' on Facebook':''):(viaFb?'Send follow-up '+n+' on Facebook (no email)':'Send Email '+n)+(need?' (due today)':'');b.onclick=()=>sendSeqEmail(l.id,n);const w=mk('div','chw');w.append(b,mk('div','chu',sent?ago(sent.at):need?'due today':'—'));return w;}
 function statusInfo(l,a,P){const left=P?P.items.filter(i=>!i.done):[];if(a.closed)return {cls:'st-mid',txt:l.status,left};
 if(left.length)return {cls:'st-bad',txt:'Follow up: '+left.map(i=>i.n).join(', '),left};
 if(a.over>0)return {cls:'st-bad',txt:'Follow up: '+a.over+' day'+(a.over>1?'s':'')+' overdue',left};
 if(a.due)return {cls:'st-bad',txt:'Follow up today',left};
 if(!a.attempts&&!a.tried.length)return {cls:'st-bad',txt:'Not contacted yet',left};
-if(P)return {cls:'st-ok',txt:'Email '+P.day+' sent',left};
+if(P)return {cls:'st-ok',txt:P.items[0].n+' sent',left};
 return {cls:'st-mid',txt:l.next?'Next: '+fd(l.next):'No follow-up set',left};}
-function detailRow(l){const tr=mk('tr','detail');const td=mk('td');td.colSpan=11;const g=mk('div','dgrid');
+function detailRow(l){const tr=mk('tr','detail');const td=mk('td');td.colSpan=10;const g=mk('div','dgrid');
 const c1=mk('div');c1.append(mk('h4',null,'Client files'));const fl=mk('div','flist');const C=l.cloud||[];
 if(!C.length)fl.append(mk('p','note',SYNC?'No files yet. Upload a computation or photos for this client.':'Connect your Google Sheet (Admin tab) to save files to Google Drive.'));
 C.forEach(f=>{const r=mk('div','frow');const a=mk('a','link',f.name);a.href=f.url;a.target='_blank';a.rel='noopener';r.append(a,btn('Copy link',async()=>{if(await copyStr(f.url))toast('Link copied.');}),btn('Remove',()=>removeCloud(l.id,f.id)));fl.append(r);});
@@ -975,17 +982,17 @@ const sm=mk('p','note');sm.textContent=['viber','whatsapp','sms','call','email']
 if(!LG.length)al.append(mk('p','note','Nothing sent yet.'));LG.forEach(e=>{const d=new Date(e.at);al.append(mk('div','frow',(NM[e.ch]||e.ch)+(e.s==='replied'?' (replied)':e.s==='failed'?' (no answer)':'')+' · '+d.toLocaleDateString([],{month:'short',day:'numeric'})+' '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})));});
 c3.append(al);g.append(c1,c2,c3);td.append(g);tr.append(td);return tr;}
 function renderClients(){const tb=$('#client-rows');if(!tb)return;tb.replaceChildren();let L=leads.map(norm).map(l=>({l,a:analyze(l)}));const q=msQ.trim().toLowerCase();
-if(q)L=L.filter(x=>[x.l.name,x.l.phone,x.l.email,propOf(x.l),x.l.notes].join(' ').toLowerCase().includes(q));
+if(q)L=L.filter(x=>[x.l.name,x.l.phone,x.l.email,x.l.fb,propOf(x.l),x.l.notes].join(' ').toLowerCase().includes(q));
 if(msSt==='open')L=L.filter(x=>!x.a.closed);else if(msSt==='due')L=L.filter(x=>statusInfo(x.l,x.a,plan(x.l)).cls==='st-bad');else if(msSt)L=L.filter(x=>(x.l.status||'New')===msSt);
 const nx=x=>x.l.next||'9999';const rank=x=>statusInfo(x.l,x.a,plan(x.l)).cls==='st-bad'?0:1;
 if(msSort==='next')L.sort((a,b)=>nx(a)<nx(b)?-1:nx(a)>nx(b)?1:0);else if(msSort==='new')L.sort((a,b)=>(b.l.created||'')<(a.l.created||'')?-1:1);else if(msSort==='name')L.sort((a,b)=>(a.l.name||'').localeCompare(b.l.name||''));else L.sort((a,b)=>rank(a)-rank(b)||b.a.score-a.a.score||(nx(a)<nx(b)?-1:1));
 const cnt=$('#client-count');if(cnt)cnt.textContent=L.length+' of '+leads.length+' clients';
-if(!L.length){const tr=mk('tr');const td=mk('td','note',leads.length?'No clients match.':'No clients yet. Tap + Add client, or add them with the lead form or your Google Sheet.');td.colSpan=11;tr.append(td);tb.append(tr);return;}
+if(!L.length){const tr=mk('tr');const td=mk('td','note',leads.length?'No clients match.':'No clients yet. Tap + Add client, or add them with the lead form or your Google Sheet.');td.colSpan=10;tr.append(td);tb.append(tr);return;}
 L.forEach(({l,a})=>{const P=plan(l);const si=statusInfo(l,a,P);const tr=mk('tr',si.cls==='st-bad'?'row-due':'');tr.dataset.key=l.id;
 const c=(x,cls)=>{const td=mk('td',cls||null);if(x instanceof Node)td.append(x);else td.textContent=x==null||x===''?'—':x;tr.append(td);return td;};
-const nm=mk('div');const nb=btn(l.name||'(no name)',()=>openEditor(l.id),'name-btn');nm.append(nb,mk('div','sub',l.lastContact?'Last contact: '+fd(l.lastContact):'Not contacted yet'));c(nm,'c-name');
-const ph=mk('div','nowrap',l.phone||'—');c(ph);c(l.email||'—','c-email');c(propOf(l)||'—');c(l.stage||'—','nowrap');
-const ms=mk('div','acts-row');[['viber','Viber'],['whatsapp','WhatsApp'],['sms','SMS'],['call','Call']].forEach(([k,n])=>ms.append(cbtn(l,P,si.left,k,n)));c(ms);
+const nm=mk('div');const nb=btn(l.name||'(no name)',()=>openEditor(l.id),'name-btn');const via=[l.phone&&'Mobile',l.email&&'Email',fbUrl(l)&&'Facebook'].filter(Boolean);const vc=mk('div','via'+(via.length?'':' none'),via.length?(via.length===1?via[0]+' only':via.join(' + ')):'No contact info');vc.title='How you can reach this client';nm.append(nb,vc,mk('div','sub',l.lastContact?'Last contact: '+fd(l.lastContact):'Not contacted yet'));c(nm,'c-name');
+const ph=mk('div','nowrap',l.phone||'—');c(ph);c(l.email||'—','c-email');c(propOf(l)||'—');
+const ms=mk('div','acts-row');[['viber','Viber'],['whatsapp','WhatsApp'],['sms','SMS'],['call','Call'],['facebook','Facebook']].forEach(([k,n])=>ms.append(cbtn(l,P,si.left,k,n)));c(ms);
 const es=mk('div','acts-row');[1,2,3].forEach(n=>es.append(eswitch(l,P,si.left,n)));c(es);
 const fb=btn('📎 '+(l.cloud||[]).length+(openRow===l.id?' ▴':' ▾'),()=>{openRow=openRow===l.id?null:l.id;if(openRow&&SYNC&&!MATS)loadMats();renderClients();},'link nowrap');c(fb);
 const nt=document.createElement('textarea');nt.className='c-note';nt.rows=2;nt.placeholder='Add a note…';nt.value=l.notes||'';nt.setAttribute('aria-label','Notes for '+(l.name||'client'));nt.onchange=()=>{const x=norm(getLead(l.id));x.notes=nt.value.trim();x.updated=new Date().toISOString();saveLead(x);toast('Note saved.');};c(nt);

@@ -44,6 +44,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-o
 <label>Full name <span class="req">*</span><input id="name" autocomplete="name" required></label>
 <label>Mobile number<input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="09xx xxx xxxx"></label>
 <label>Email<input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"></label>
+<label>Facebook link <span style="font-weight:400;opacity:.7">(optional)</span><input id="fb" inputmode="url" autocapitalize="none" spellcheck="false" placeholder="facebook.com/your.name"></label>
 <label>Interested project<select id="project">
 <option value="">Choose a project</option>
 <option>MIRA · Cubao</option>
@@ -87,13 +88,13 @@ $('#project').onchange=()=>{$('#other-row').hidden=$('#project').value!=='other'
 $('#f').onsubmit=async e=>{e.preventDefault();err('');
 const name=val('#name'),phone=val('#phone'),email=val('#email');
 if(!name){$('#name').focus();return err('Please enter the full name.');}
-if(!phone&&!email){$('#phone').focus();return err('Please enter a mobile number or an email.');}
+const fb=$('#fb').value.trim();if(!phone&&!email&&!fb){$('#phone').focus();return err('Please enter a mobile number, an email or your Facebook link.');}
 if(phone&&phone.replace(/[^0-9]/g,'').length<10)return err('Please check the mobile number.');
 if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return err('Please check the email.');
 const sel=$('#project').value;const project=sel==='other'?val('#other'):sel.split(' · ')[0];
 if(!/^https:\/\//.test(URL_))return err('This form is not connected to the Google Sheet yet.');
 const b=$('#go');b.disabled=true;b.textContent='Sending…';
-try{const r=await fetch(URL_,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'add',key:KEY_,name,phone,email,project,notes:val('#notes'),source:new URLSearchParams(location.search).get('source')||'Lead form'})});
+try{const r=await fetch(URL_,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'add',key:KEY_,name,phone,email,project,notes:[val('#notes'),fb?'Facebook: '+fb:''].filter(Boolean).join('\n'),source:new URLSearchParams(location.search).get('source')||'Lead form'})});
 const j=await r.json();if(!j.ok)throw new Error(j.error||'failed');
 $('#v-form').hidden=true;$('#v-done').hidden=false;$('#done-msg').textContent='Thank you, '+name.split(' ')[0]+'! Your details were received. '+FIRST+' will contact you soon.';}
 catch(x){err('Could not send. Please check the internet connection and try again.');}
